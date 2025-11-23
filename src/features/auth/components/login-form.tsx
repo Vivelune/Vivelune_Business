@@ -67,9 +67,11 @@ export function LoginForm() {
                                 <div className="grid gap-6">
                                     <div className="flex flex-col gap-4">
                                         <Button variant="outline" className="w-full" type="button" disabled={isPending}>
+                                            <Image width={20} height={20} alt="Github Logo" src="/github.svg"/>
                                             Contiue with Github
                                         </Button>
                                         <Button variant="outline" className="w-full" type="button" disabled={isPending}>
+                                            <Image width={20} height={20} alt="Google Logo" src="/google.svg"/>
                                             Contiue with Google
                                         </Button>
                                     </div>
