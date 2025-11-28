@@ -17,6 +17,8 @@ import {
     Sidebar, SidebarContent, SidebarFooter, SidebarGroup,SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
+import { auth } from "@/lib/auth";
+import { useHasActiveSubscription } from "@/features/subscriptions/hooks/use-subscription";
 
 
 const menuItems = [
@@ -51,7 +53,7 @@ export const AppSidebar = () => {
 
     const router = useRouter();
     const pathname = usePathname();
-
+    const {hasActiveSubscription, isLoading}= useHasActiveSubscription()
     return (
         <Sidebar collapsible="icon">
             <SidebarHeader>
@@ -104,15 +106,19 @@ export const AppSidebar = () => {
 
             <SidebarFooter>
                 <SidebarMenu>
+                    {!hasActiveSubscription && !isLoading && (
                     <SidebarMenuItem>
-                        <SidebarMenuButton tooltip="Upgrade to Pro" className="gap-x-4" onClick={()=>{}}>
+                        <SidebarMenuButton tooltip="Upgrade to Pro"
+                         className="gap-x-4"
+                         onClick={()=>{authClient.checkout({slug:"Vivelune-Pro"})}}>
                             <StarIcon className="h-4 w-4"/>
                             <span>Get Vivelune Pro</span>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
+                )}
 
                     <SidebarMenuItem>
-                        <SidebarMenuButton tooltip="Billing Portal" className="gap-x-4" onClick={()=>{}}>
+                        <SidebarMenuButton tooltip="Billing Portal" className="gap-x-4" onClick={()=>{authClient.customer.portal()}}>
                             <CreditCardIcon className="h-4 w-4"/>
                             <span>Billing Portal</span>
                         </SidebarMenuButton>
