@@ -173,7 +173,7 @@ export const WorkflowItem = ({
         })
     }
     return(
-        <EntityItem href={`/workflows.${data.id}`} title={data.name}
+        <EntityItem href={`/workflows/${data.id}`} title={data.name}
         subtitle={
             <>
             Updated {formatDistanceToNow(data.updatedAt, {addSuffix:true})}{" "}
