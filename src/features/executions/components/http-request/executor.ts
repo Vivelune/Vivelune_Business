@@ -2,6 +2,7 @@ import type { NodeExecutor } from "@/features/executions/types";
 import { NonRetriableError } from "inngest";
 import ky, {type Options as KyOptions} from "ky"
 import Handlebars from "handlebars";
+import { httpRequestChannel } from "@/inngest/channels/http-request";
 
 Handlebars.registerHelper("json" , (context) => {
     const jsonString = JSON.stringify(context, null , 2);
@@ -21,21 +22,54 @@ export const httpRequestExecutor: NodeExecutor<HTTPRequestData> = async({
     nodeId,
     context, 
     step,
+    publish,
 }) =>{
+
+
+    await publish(
+        httpRequestChannel().status({
+            nodeId,
+            status:"loading",
+
+        })
+    )
+
     if(!data.endpoint){
+        
+await publish(
+        httpRequestChannel().status({
+            nodeId,
+            status:"error",
+
+        })
+    )
         throw new NonRetriableError("HTTP Request Node is missing endpoint configuration.")
     }
 
     if(!data.variableName){
+        await publish(
+        httpRequestChannel().status({
+            nodeId,
+            status:"error",
+
+        })
+    )
         throw new NonRetriableError("HTTP Request Node is missing variable name configuration.")
     }
 
 
     if(!data.method){
+        await publish(
+        httpRequestChannel().status({
+            nodeId,
+            status:"error",
+
+        })
+    )
         throw new NonRetriableError("HTTP Request Node is missing method configuration.")
     }
 
-
+try{
     const result = await step.run("http-request", async ()=> {
         const endpoint = Handlebars.compile(data.endpoint)(context);
 
@@ -82,6 +116,24 @@ export const httpRequestExecutor: NodeExecutor<HTTPRequestData> = async({
 
     // Publish loading state for http request
     // const result = await step.run("http-request", async ()=>context)
+    await publish(
+        httpRequestChannel().status({
+            nodeId,
+            status:"success",
+
+        })
+    )
 
     return result
+} catch(error)
+{
+     await publish(
+        httpRequestChannel().status({
+            nodeId,
+            status:"error",
+
+        })
+    )
+    throw error
+}
 }
