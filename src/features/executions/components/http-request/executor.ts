@@ -11,9 +11,9 @@ Handlebars.registerHelper("json" , (context) => {
 })
 
 type HTTPRequestData = {
-    variableName: string;
-    endpoint: string;
-    method: "GET" | "POST" | "PUT" | "PATCH"| "DELETE";
+    variableName?: string;
+    endpoint?: string;
+    method?: "GET" | "POST" | "PUT" | "PATCH"| "DELETE";
     body?: string;
 }
 
@@ -33,6 +33,10 @@ export const httpRequestExecutor: NodeExecutor<HTTPRequestData> = async({
 
         })
     )
+
+
+try{
+    const result = await step.run("http-request", async ()=> {
 
     if(!data.endpoint){
         
@@ -68,9 +72,6 @@ await publish(
     )
         throw new NonRetriableError("HTTP Request Node is missing method configuration.")
     }
-
-try{
-    const result = await step.run("http-request", async ()=> {
         const endpoint = Handlebars.compile(data.endpoint)(context);
 
 
