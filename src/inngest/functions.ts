@@ -12,13 +12,15 @@ import { geminiChannel } from "./channels/gemini";
 import { openAiChannel } from "./channels/openai";
 import { anthropicChannel } from "./channels/anthropic";
 import { deepseekChannel } from "./channels/deepseek";
+import { discordChannel } from "./channels/discord";
+import { slackChannel } from "./channels/slack";
 
 
 
 
 export const executeWorkflow = inngest.createFunction(
   { id: "execute-workflow", 
-    retries:1,
+    retries:0,
     // retries:0, // todo: Re
   },
   { event: "workflows/execute.workflow",
@@ -31,6 +33,8 @@ export const executeWorkflow = inngest.createFunction(
       openAiChannel(),
       anthropicChannel(),
       deepseekChannel(),
+      discordChannel(),
+      slackChannel(),
     ]
    },
   async ({ event, step, publish }) => {
@@ -54,6 +58,17 @@ export const executeWorkflow = inngest.createFunction(
       })
 
 
+      const userId = await step.run("find-user-id", async () =>{
+        const workflow = await prisma.workflow.findUniqueOrThrow({
+        where: {id: workflowId},
+        select: {
+          userId : true          
+        }
+        })
+
+        return workflow.userId;
+      })
+
       // initialise the context with any initial data from the trigger
 
       let context = event.data.initialData || {};
@@ -67,6 +82,7 @@ export const executeWorkflow = inngest.createFunction(
         data: node.data as Record<string, unknown>,
         nodeId: node.id,
         context,
+        userId,
         step,
         publish,
       })
