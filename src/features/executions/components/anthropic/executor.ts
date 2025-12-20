@@ -4,6 +4,7 @@ import Handlebars from "handlebars";
 import {generateText} from "ai"
 import { anthropicChannel } from "@/inngest/channels/anthropic";
 import {createAnthropic} from "@ai-sdk/anthropic"
+import prisma from "@/lib/prisma";
 
 Handlebars.registerHelper("json" , (context) => {
     const jsonString = JSON.stringify(context, null , 2);
@@ -15,6 +16,7 @@ type AnthropicData = {
     variableName?: string;
     systemPrompt?:  string;
     userPrompt?: string;
+    credentialId?: string; 
 }
 
 export const anthropicExecutor: NodeExecutor<AnthropicData> = async({
@@ -47,6 +49,18 @@ export const anthropicExecutor: NodeExecutor<AnthropicData> = async({
 
     }
 
+     if (!data.credentialId){
+              await publish(
+            anthropicChannel().status({
+                nodeId,
+                status:"error",
+    
+            })
+        )
+        throw new NonRetriableError("Anthropic node: Credential is missing")
+    
+        }
+
 
 
     if (!data.userPrompt){
@@ -70,11 +84,24 @@ export const anthropicExecutor: NodeExecutor<AnthropicData> = async({
 
     const userPrompt = Handlebars.compile(data.userPrompt)(context);
 
-    // TODO : FETCH credential that user selected
-     const credentialValue = process.env.ANTHROPIC_API_KEY
+
+
+    const credential = await step.run("get-credential" , () =>{
+        return prisma.credential.findUnique({
+            where:{
+                id: data.credentialId,
+            }   
+         })
+    });
+
+    if(!credential){
+        throw new NonRetriableError("Anthropic node: Credential not found" )
+    }
+
+
 
     const anthropic = createAnthropic({
-        apiKey: credentialValue,
+        apiKey: credential.value,
 
 
         

@@ -155,6 +155,7 @@ export const WorkflowsEmpty =()=>{
 
     return(
         <>
+        {modal}
         <EmptyView onNew={handleCreate} message="Ooops! No Workflows. Get Started by Creating Workflows."/>
         </>
     )

@@ -63,6 +63,12 @@ const executionNodes: NodeTypeOption[] = [
         label: "Anthropic",
         description: "Uses Anthropic to generate data",
         icon:"/anthropic.svg",
+    },
+    {
+        type: NodeType.DEEPSEEK,
+        label: "DeepSeek",
+        description: "Uses DeepSeek to generate data",
+        icon:"/deepseek.svg",
     }
 ];
 
