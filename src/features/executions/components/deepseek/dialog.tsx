@@ -32,16 +32,16 @@ const formSchema = z.object({
 
 
 
-export type OpenAiFormValues = z.infer<typeof formSchema>
+export type DeepseekFormValues = z.infer<typeof formSchema>
 
 interface Props {
     open: boolean;
     onOpenChange : (open: boolean) => void
     onSubmit: (values: z.infer<typeof formSchema>) => void;
-    defaultValues?: Partial<OpenAiFormValues>;
+    defaultValues?: Partial<DeepseekFormValues>;
 }
 
-export const OpenAiDialog = ({
+export const DeepseekDialog = ({
     open,
     onOpenChange,
     onSubmit,
@@ -49,11 +49,12 @@ export const OpenAiDialog = ({
 }:Props)=>{
 
 
-    const {
+
+        const {
             data: credentials, 
             isLoading: isLoadingCredentials,
      
-        } = useCredentialsByType(CredentialType.OPENAI)
+        } = useCredentialsByType(CredentialType.DEEPSEEK)
     
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -70,14 +71,14 @@ export const OpenAiDialog = ({
         if(open){
             form.reset({
             variableName: defaultValues.variableName || "",
-            credentialId: defaultValues.credentialId || "", 
+             credentialId: defaultValues.credentialId || "",
             systemPrompt: defaultValues.systemPrompt || "",
             userPrompt: defaultValues.userPrompt || "",  
             })
         }
     },[open, defaultValues, form  ])
 
-    const watchVariableName = form.watch("variableName") || "myOpenAi";
+    const watchVariableName = form.watch("variableName") || "myDeepseek";
 
    
 
@@ -92,7 +93,7 @@ export const OpenAiDialog = ({
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>
-                        OpenAI Configuration
+                        Deepseek Configuration
                     </DialogTitle>
                     <DialogDescription>
                         Configure the AI model and prompts for this node.
@@ -112,7 +113,7 @@ export const OpenAiDialog = ({
                                 <FormLabel>Variable Name</FormLabel>
                                 <FormControl>
                                     <Input
-                                    placeholder="myOpenAI"
+                                    placeholder="myDeepseek"
                                     {...field}
                                     />
                                 </FormControl>
@@ -131,12 +132,13 @@ export const OpenAiDialog = ({
 
 
 
+
                         <FormField
                          control = {form.control}
                         name="credentialId"
                         render={({field})=>(
                             <FormItem>
-                                <FormLabel>OpenAI Credential</FormLabel>
+                                <FormLabel>DeepSeek Credential</FormLabel>
                                 <Select
                                 onValueChange={field.onChange}
                                 defaultValue={field.value}
@@ -159,8 +161,8 @@ export const OpenAiDialog = ({
                                             gap-2
                                             ">
                                                 <Image
-                                                src="/openai.svg"
-                                                alt="OpenAi"
+                                                src="/deepseek.svg"
+                                                alt="Deepseek"
                                                 width={16}
                                                 height={16}
                                                 />
@@ -178,6 +180,7 @@ export const OpenAiDialog = ({
 
   
                         
+
 
 
   

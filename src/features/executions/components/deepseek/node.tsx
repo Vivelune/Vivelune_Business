@@ -4,28 +4,29 @@ import { Node, NodeProps, useReactFlow } from "@xyflow/react";
 import { memo, useState } from "react";
 import { BaseExecutionNode } from "../base-execution-node";
 import { useNodeStatus } from "../../hooks/use-node-status";
-import { AnthropicDialog, AnthropicFormValues } from "./dialog";
-import { ANTHROPIC_CHANNEL_NAME } from "@/inngest/channels/anthropic";
-import { fetchAnthropicRealtimeToken } from "./actions";
+import { DeepseekDialog, DeepseekFormValues } from "./dialog";
+import { DEEPSEEK_CHANNEL_NAME } from "@/inngest/channels/deepseek";
+import { fetchDeepseekRealtimeToken } from "./actions";
 
-type AnthropicNodeData = {
+type DeepseekNodeData = {
     variableName?:string;
     systemPrompt?:string;
     userPrompt?:string;
     credentialId?: string
 
+    
          
 };
  
-type AnthropicNodeType = Node<AnthropicNodeData>;
+type DeepseekNodeType = Node<DeepseekNodeData>;
 
-export const AnthropicNode = memo((props: NodeProps<AnthropicNodeType>) => {
+export const DeepseekNode = memo((props: NodeProps<DeepseekNodeType>) => {
 
     const [dialogOpen, setDialogOpen] = useState(false)
     const {setNodes } = useReactFlow();
 
 
-    const handleSubmit = (values : AnthropicFormValues) =>{
+    const handleSubmit = (values : DeepseekFormValues) =>{
         setNodes((nodes)=> nodes.map((node)=>{
             if (node.id === props.id){
                 return {
@@ -43,10 +44,10 @@ export const AnthropicNode = memo((props: NodeProps<AnthropicNodeType>) => {
 
     const nodeStatus = useNodeStatus({
         nodeId:props.id,
-        channel: ANTHROPIC_CHANNEL_NAME,
+        channel: DEEPSEEK_CHANNEL_NAME,
         // channel: httpRequestChannel().name,
         topic: "status",
-        refreshToken: fetchAnthropicRealtimeToken,
+        refreshToken: fetchDeepseekRealtimeToken,
     })
 
     const handleOpenSettings = ()=>setDialogOpen(true);
@@ -54,14 +55,14 @@ export const AnthropicNode = memo((props: NodeProps<AnthropicNodeType>) => {
 
     const nodeData = props.data;
     const description = nodeData?.userPrompt
-    ? `claude-3-5-haiku-latest : ${nodeData.userPrompt.slice(0,50)}... `
+    ? `deepseek-reasoner : ${nodeData.userPrompt.slice(0,50)}... `
     : "Not Configured"
 
 
 
     return (
         <>
-        <AnthropicDialog
+        <DeepseekDialog
         open={dialogOpen} 
         onOpenChange={setDialogOpen}
         onSubmit={handleSubmit}
@@ -70,8 +71,8 @@ export const AnthropicNode = memo((props: NodeProps<AnthropicNodeType>) => {
         <BaseExecutionNode
          {...props}
          id={props.id}
-         icon="/anthropic.svg"
-         name="Anthropic"
+         icon="/deepseek.svg"
+         name="DeepSeek"
          status={nodeStatus}
          description={description}
          onSettings={handleOpenSettings}
@@ -83,4 +84,4 @@ export const AnthropicNode = memo((props: NodeProps<AnthropicNodeType>) => {
 )
 
 
-AnthropicNode.displayName = "AnthropicNode";
+DeepseekNode.displayName = "DeepSeekNode";

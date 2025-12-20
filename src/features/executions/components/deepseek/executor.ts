@@ -2,8 +2,8 @@ import type { NodeExecutor } from "@/features/executions/types";
 import { NonRetriableError } from "inngest";
 import Handlebars from "handlebars";
 import {generateText} from "ai"
-import { geminiChannel } from "@/inngest/channels/gemini";
-import {createGoogleGenerativeAI} from "@ai-sdk/google";
+import {createDeepSeek} from "@ai-sdk/deepseek"
+import { deepseekChannel } from "@/inngest/channels/deepseek";
 import prisma from "@/lib/prisma";
 
 Handlebars.registerHelper("json" , (context) => {
@@ -12,14 +12,15 @@ Handlebars.registerHelper("json" , (context) => {
     return safeString;
 })
 
-type GeminiData = {
+type DeepseekData = {
     variableName?: string;
     systemPrompt?:  string;
     userPrompt?: string;
-    credentialId?: string; 
+    credentialId?: string
+
 }
 
-export const geminiExecutor: NodeExecutor<GeminiData> = async({
+export const deepseekExecutor: NodeExecutor<DeepseekData> = async({
     data,
     nodeId,
     context, 
@@ -29,7 +30,7 @@ export const geminiExecutor: NodeExecutor<GeminiData> = async({
 
 
     await publish(
-        geminiChannel().status({
+        deepseekChannel().status({
             nodeId,
             status:"loading",
 
@@ -39,52 +40,50 @@ export const geminiExecutor: NodeExecutor<GeminiData> = async({
 
     if (!data.variableName){
           await publish(
-        geminiChannel().status({
+        deepseekChannel().status({
             nodeId,
             status:"error",
 
         })
     )
-    throw new NonRetriableError("Gemini node: Variable name is missing")
+    throw new NonRetriableError("Deepseek node: Variable name is missing")
 
     }
 
-     if (!data.credentialId){
-          await publish(
-        geminiChannel().status({
-            nodeId,
-            status:"error",
+    if (!data.credentialId){
+              await publish(
+            deepseekChannel().status({
+                nodeId,
+                status:"error",
+    
+            })
+        )
+        throw new NonRetriableError("Deepseek node: Credential is missing")
+    
+        }
 
-        })
-    )
-    throw new NonRetriableError("Gemini node: Credential is missing")
-
-    }
 
 
     if (!data.userPrompt){
           await publish(
-        geminiChannel().status({
+        deepseekChannel().status({
             nodeId,
             status:"error",
 
         })
     )
-    throw new NonRetriableError("Gemini node: User prompt is missing")
+    throw new NonRetriableError("Deepseek node: User prompt is missing")
 
     }
 
+    // TODO Throw if credential is missing
 
 
     const systemPrompt = data.systemPrompt
     ? Handlebars.compile(data.systemPrompt)(context)
     : "You are a helpful assistant";
 
-
-
-
     const userPrompt = Handlebars.compile(data.userPrompt)(context);
-
 
 
 
@@ -96,12 +95,13 @@ export const geminiExecutor: NodeExecutor<GeminiData> = async({
          })
     });
 
-    if(!credential){
-        throw new NonRetriableError("Gemini node: Credential not found" )
+     if(!credential){
+        throw new NonRetriableError("Deepseek node: Credential not found" )
     }
 
 
-    const google = createGoogleGenerativeAI({
+
+    const deepseek = createDeepSeek({
         apiKey: credential.value,
 
 
@@ -110,10 +110,10 @@ export const geminiExecutor: NodeExecutor<GeminiData> = async({
 
 try {
     const {steps} = await step.ai.wrap(
-        "gemini-generate-text",
+        "deepseek-generate-text",
         generateText,
         {
-            model: google("gemini-3-flash-preview"),
+            model: deepseek("deepseek-reasoner"),
             system: systemPrompt,
             prompt: userPrompt,
             experimental_telemetry:{
@@ -134,7 +134,7 @@ try {
 
 
       await publish(
-        geminiChannel().status({
+        deepseekChannel().status({
             nodeId,
             status:"success",
 
@@ -150,7 +150,7 @@ try {
 
 } catch (error) {
       await publish(
-        geminiChannel().status({
+        deepseekChannel().status({
             nodeId,
             status:"error",
 
