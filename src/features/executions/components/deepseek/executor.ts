@@ -24,6 +24,7 @@ export const deepseekExecutor: NodeExecutor<DeepseekData> = async({
     data,
     nodeId,
     context, 
+    userId,
     step,
     publish,
 }) =>{
@@ -91,11 +92,19 @@ export const deepseekExecutor: NodeExecutor<DeepseekData> = async({
         return prisma.credential.findUnique({
             where:{
                 id: data.credentialId,
+                userId,
             }   
          })
     });
 
      if(!credential){
+         await publish(
+            deepseekChannel().status({
+                nodeId,
+                status:"error",
+    
+            })
+        )
         throw new NonRetriableError("Deepseek node: Credential not found" )
     }
 
