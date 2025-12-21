@@ -12,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 type EntityHeaderProps={
     title: string;
     description?: string;
-    newButtonLabel: string;
+    newButtonLabel?: string;
     disabled?: boolean;
     isCreating?:boolean;
 } &
@@ -21,6 +21,7 @@ type EntityHeaderProps={
 |{onNew: () => void; newButtonHref?:never}
 |{newButtonHref:string; onNew?:never}
 |{onNew?: never; newButtonHref?:never}
+
 )
 
 
