@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 
 import { Input } from "@/components/ui/input"
 import {authClient} from '@/lib/auth-client'
+import { Loader2Icon } from "lucide-react"
 
 const loginSchema = z.object({
     email: z.email("Please enter a valid email address"),
@@ -31,6 +32,50 @@ export function LoginForm() {
             password: "",
         },
     });
+    
+    const signInGithub = async ()=>{
+
+
+    await authClient.signIn.social({
+        provider: "github"
+    },
+{
+     onSuccess: () => {
+            
+            router.push("/")
+
+        },
+        
+        onError: () => {
+            
+      // Handle the error
+     
+
+            toast.error("Something went wrong")
+        }
+})
+
+    }
+const signInGoogle = async ()=>{
+
+
+    await authClient.signIn.social({
+        provider: "google"
+    },
+{
+     onSuccess: () => {
+            
+            router.push("/")
+        },
+        onError: () => {
+            toast.error("Something went wrong")
+        }
+})
+
+    }
+
+
+
     const onSubmit = async (values: LoginFormValues) => {
         await authClient.signIn.email({
             email: values.email,
@@ -40,10 +85,16 @@ export function LoginForm() {
         },
     {
         onSuccess: () => {
-            toast.success("Logged in successfully")
+            
             router.push("/")
+            toast.success("Logged in successfully")
         },
         onError: (ctx) => {
+             if (ctx.error.status === 403) {
+        toast.error("Please verify your email address");
+      }
+      //you can also show the original error message
+      toast.error(ctx.error.message);
             toast.error(ctx.error.message)
         }
     })
@@ -66,11 +117,15 @@ export function LoginForm() {
                             <form onSubmit={form.handleSubmit(onSubmit)}>
                                 <div className="grid gap-6">
                                     <div className="flex flex-col gap-4">
-                                        <Button variant="outline" className="w-full" type="button" disabled={isPending}>
+                                        <Button 
+                                        onClick={signInGithub}
+                                        variant="outline" className="w-full" type="button" disabled={isPending}>
                                             <Image width={20} height={20} alt="Github Logo" src="/github.svg"/>
                                             Contiue with Github
                                         </Button>
-                                        <Button variant="outline" className="w-full" type="button" disabled={isPending}>
+                                        <Button 
+                                        onClick={signInGoogle}
+                                        variant="outline" className="w-full" type="button" disabled={isPending}>
                                             <Image width={20} height={20} alt="Google Logo" src="/google.svg"/>
                                             Contiue with Google
                                         </Button>
@@ -106,7 +161,9 @@ export function LoginForm() {
                                         )}/>
 
                                         <Button type="submit" className="w-full" disabled={isPending}>
-                                            Login
+                                          {isPending ? (<div>
+                                                <Loader2Icon className="animate-spin"/>
+                                            </div>) : "Login"}
                                         </Button>
 
                                     </div>
