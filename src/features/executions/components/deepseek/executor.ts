@@ -5,6 +5,7 @@ import {generateText} from "ai"
 import {createDeepSeek} from "@ai-sdk/deepseek"
 import { deepseekChannel } from "@/inngest/channels/deepseek";
 import prisma from "@/lib/prisma";
+import { decrypt } from "@/lib/encryption";
 
 Handlebars.registerHelper("json" , (context) => {
     const jsonString = JSON.stringify(context, null , 2);
@@ -111,7 +112,7 @@ export const deepseekExecutor: NodeExecutor<DeepseekData> = async({
 
 
     const deepseek = createDeepSeek({
-        apiKey: credential.value,
+        apiKey: decrypt(credential.value),
 
 
         

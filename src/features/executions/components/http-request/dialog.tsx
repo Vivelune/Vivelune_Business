@@ -21,7 +21,6 @@ const formSchema = z.object({
     }),
     method : z.enum(["GET","POST","PUT","PATCH","DELETE"]),
     body: z.string().optional()
-    // .refine() TODO
 })
 
 
