@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 
 import { Input } from "@/components/ui/input"
 import {authClient} from '@/lib/auth-client'
+import { Loader2Icon } from "lucide-react"
 
 const registerSchema = z.object({
     email: z.email("Please enter a valid email address"),
@@ -37,6 +38,46 @@ export function RegisterForm() {
             confirmPassword: "",
         },
     });
+ 
+    const signInGithub = async ()=>{
+
+
+    await authClient.signIn.social({
+        provider: "github"
+    },
+{
+     onSuccess: () => {
+            router.push("/")
+           
+
+        },
+        onError: () => {
+            toast.error("Something went wrong")
+        }
+})
+
+    }
+const signInGoogle = async ()=>{
+
+
+    await authClient.signIn.social({
+        provider: "google"
+    },
+{
+     onSuccess: () => {
+            
+            router.push("/")
+        },
+        onError: () => {
+            toast.error("Something went wrong")
+        }
+})
+
+    }
+
+
+
+
     const onSubmit = async (values: RegisterFormValues) => {
         await authClient.signUp.email(
             {
@@ -49,7 +90,7 @@ export function RegisterForm() {
             {
                 onSuccess: () => {
                     toast.success("Account created successfully!")
-                    router.push("/")
+                    // router.push("/")
                 },
                 onError: (ctx) => {
                     toast.error(ctx.error.message)
@@ -60,6 +101,7 @@ export function RegisterForm() {
     };
 
     const isPending = form.formState.isSubmitting;
+    const isLoading = form.formState.isLoading
 
     return (
         <div className="flex flex-col gap-6">
@@ -76,12 +118,18 @@ export function RegisterForm() {
                             <form onSubmit={form.handleSubmit(onSubmit)}>
                                 <div className="grid gap-6">
                                     <div className="flex flex-col gap-4">
-                                        <Button variant="outline" className="w-full" type="button" disabled={isPending}>
-                                                                                     <Image width={20} height={20} alt="Github Logo" src="/github.svg"/>
+                                        <Button 
+                                        onClick={signInGithub}
+                                        
+                                        variant="outline" className="w-full" type="button" disabled={isPending}>
+                                            <Image width={20} height={20} alt="Github Logo" src="/github.svg"/>
                                          
                                             Contiue with Github
                                         </Button>
-                                        <Button variant="outline" className="w-full" type="button" disabled={isPending}>
+                                        <Button
+                                        onClick={signInGoogle}
+                                        
+                                        variant="outline" className="w-full" type="button" disabled={isPending}>
                                                                                      <Image width={20} height={20} alt="Google Logo" src="/google.svg"/>
                                          
                                             Contiue with Google
@@ -132,7 +180,9 @@ export function RegisterForm() {
                                         )}/>
 
                                         <Button type="submit" className="w-full" disabled={isPending}>
-                                            Sign Up
+                                            {isPending ? (<div>
+                                                <Loader2Icon className="animate-spin"/>
+                                            </div>) : "Sign Up"}
                                         </Button>
 
                                     </div>
