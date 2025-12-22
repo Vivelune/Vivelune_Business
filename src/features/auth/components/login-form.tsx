@@ -42,7 +42,7 @@ export function LoginForm() {
 {
      onSuccess: () => {
             
-            router.push("/")
+            router.push("/workflows")
 
         },
         
@@ -65,7 +65,7 @@ const signInGoogle = async ()=>{
 {
      onSuccess: () => {
             
-            router.push("/")
+            router.push("/workflows")
         },
         onError: () => {
             toast.error("Something went wrong")
@@ -80,13 +80,13 @@ const signInGoogle = async ()=>{
         await authClient.signIn.email({
             email: values.email,
             password: values.password,
-            callbackURL: "/",
+            callbackURL: "/workflows",
             
         },
     {
         onSuccess: () => {
             
-            router.push("/")
+            router.push("/workflows")
             toast.success("Logged in successfully")
         },
         onError: (ctx) => {
