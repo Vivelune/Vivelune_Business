@@ -23,6 +23,7 @@ const registerSchema = z.object({
 .refine((data)=> data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword", 'password'],
+    
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -37,8 +38,11 @@ export function RegisterForm() {
             password: "",
             confirmPassword: "",
         },
+        
     });
  
+
+   
     const signInGithub = async ()=>{
 
 
@@ -47,7 +51,7 @@ export function RegisterForm() {
     },
 {
      onSuccess: () => {
-            router.push("/")
+            router.push("/workflows")
            
 
         },
@@ -66,7 +70,7 @@ const signInGoogle = async ()=>{
 {
      onSuccess: () => {
             
-            router.push("/")
+            router.push("/workflows")
         },
         onError: () => {
             toast.error("Something went wrong")
@@ -84,13 +88,13 @@ const signInGoogle = async ()=>{
                 name: values.email,
                 email: values.email,
                 password: values.password,
-                callbackURL:"/",
+                callbackURL:"/signup",
                 
             },
             {
                 onSuccess: () => {
-                    toast.success("Account created successfully!")
-                    // router.push("/")
+                    toast.success("Account created successfully! Please verifiy the your account!")
+                    router.push("/login")
                 },
                 onError: (ctx) => {
                     toast.error(ctx.error.message)
