@@ -48,7 +48,6 @@ export function LoginForm() {
         
         onError: () => {
             
-      // Handle the error
      
 
             toast.error("Something went wrong")
@@ -91,7 +90,7 @@ const signInGoogle = async ()=>{
         },
         onError: (ctx) => {
              if (ctx.error.status === 403) {
-        toast.error("Please verify your email address");
+        toast.error("Something went wrong!");
       }
       //you can also show the original error message
       toast.error(ctx.error.message);

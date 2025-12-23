@@ -34,7 +34,7 @@ export default function TermsPage() {
       <header className="fixed top-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-b border-gray-300">
         <div className="max-w-7xl mx-auto h-16 px-6 flex items-center justify-between">
           <div className="text-xl font-semibold tracking-tight cursor-pointer">
-            <Link href="/">Vivelune</Link></div>
+            <Link href="/welcome">Vivelune</Link></div>
           <nav className="hidden md:flex items-center gap-8 text-sm text-gray-600">
             <Link href="/docs" className="hover:text-gray-900 transition">Docs</Link>
             <Link href="/contact" className="hover:text-gray-900 transition">Contact</Link>
