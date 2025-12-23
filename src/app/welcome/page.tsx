@@ -31,17 +31,12 @@ export default function Page() {
       <header className="fixed top-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-b border-gray-300">
         <div className="max-w-7xl mx-auto h-16 px-6 flex items-center justify-between">
           <div className="text-xl font-semibold tracking-tight cursor-pointer">
-            <Link href="/welcome">Vivelune</Link></div>
+            <Link href="/">Vivelune</Link></div>
           <nav className="hidden md:flex items-center gap-8 text-sm text-gray-600">
             <Link href="/docs" className="hover:text-gray-900 transition">Docs</Link>
             <Link href="/contact" className="hover:text-gray-900 transition">Contact</Link>
-            <Link href="/login" className="hover:text-gray-900 transition">Login</Link>
-            <Link
-              href="/signup"
-              className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-md shadow-md shadow-gray-400/20 transition"
-            >
-              Start Free Trial
-            </Link>
+            <Link href="/login" className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-md shadow-md shadow-gray-400/20 transition">Login</Link>
+            
           </nav>
         </div>
       </header>
@@ -64,7 +59,7 @@ export default function Page() {
               href="/signup"
               className="bg-black hover:bg-gray-800 text-white px-6 py-3 rounded-md shadow-lg shadow-gray-400/20 transition"
             >
-              Start 14-Day Free Trial
+              Automate Your Everyday
             </Link>
             <Link
               href="/docs"
