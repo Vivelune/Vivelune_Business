@@ -391,7 +391,7 @@ AI Output (variable: "summary") → Discord:
               <li>Feature requests and suggestions</li>
             </ul>
             <p className="mt-4 text-gray-700">
-              Email: <a href="mailto:support@vivelune.com" className="underline">hello@vivelune.com</a>
+              Email: <a href="mailto:hello@vivelune.com" className="underline">hello@vivelune.com</a>
             </p>
           </div>
         </div>

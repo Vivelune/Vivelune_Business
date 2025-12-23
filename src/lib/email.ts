@@ -23,10 +23,8 @@ export async function sendEmail({
     throw new Error("Either `text` or `html` must be provided");
   }
 
-  const from =
-    process.env.NODE_ENV === "production"
-      ? "Vivelune <no-reply@mail.vivelune.com>" // ← after domain verification
-      : "Vivelune <onboarding@resend.dev>";     // ← testing/sandbox
+  const from = "Vivelune <no-reply@vivelune.com>"
+   
 
   const base = {
     from,
