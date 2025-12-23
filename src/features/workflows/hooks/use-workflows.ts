@@ -30,7 +30,7 @@ export const useCreateWorkflow =()=>{
                 );
             },
             onError: (error) =>{
-                toast.error(`Failed to Create Workflow: ${error.message}`)
+                toast.error(`Failed to Create Workflow ok: ${error.message}`)
             }
         }
     ))
