@@ -88,7 +88,7 @@ const signInGoogle = async ()=>{
                 name: values.email,
                 email: values.email,
                 password: values.password,
-                callbackURL:"/signup",
+                callbackURL:"/workflows",
                 
             },
             {

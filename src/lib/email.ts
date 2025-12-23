@@ -23,31 +23,22 @@ export async function sendEmail({
     throw new Error("Either `text` or `html` must be provided");
   }
 
-  const from = "Vivelune <no-reply@vivelune.com>"
-   
+  const from = "Vivelune <no-reply@vivelune.com>";
 
-  const base = {
+  console.log("📨 Sending email", { to, from, subject });
+
+  const { data, error } = await resend.emails.send({
     from,
     to,
     subject,
-  };
-
-  const payload = html
-    ? {
-        ...base,
-        html,
-      }
-    : {
-        ...base,
-        text: text!,
-      };
-
-  const { data, error } = await resend.emails.send(payload);
+    ...(html ? { html } : { text: text! }),
+  });
 
   if (error) {
-    console.error("Resend send error:", error);
+    console.error("❌ Resend error:", error);
     throw new Error(error.message);
   }
 
+  console.log("✅ Email sent:", data?.id);
   return data;
 }
