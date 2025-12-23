@@ -7,8 +7,8 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source:"/workflows",
-        destination:"/",
+        source:"/",
+        destination:"/landingpage",
         permanent:false,
       }
     ]
