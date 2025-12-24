@@ -23,23 +23,6 @@ Vivelune solves the modern automation paradox: powerful tools shouldn't require 
 
 🎨 Visual Demo
 
-<
-div align="center">
-graph LR
-    A[Google Form Trigger] --> B[OpenAI Analysis]
-    B --> C[HTTP API Call]
-    C --> D[Slack Notification]
-    D --> E[Database Update]
-    style A fill:#4285F4
-    style B fill:#10A37F
-    style C fill:#FF6B35
-    style D fill:#4A154B
-    style E fill:#336791
-
-  Example: Automate customer feedback processing from Google Forms to Slack with AI analysis
-
-</div>
-
 
 <h3>🏗️ Technical Architecture</h3>
 Full-Stack Modern Stack
@@ -85,9 +68,6 @@ Professional Support: Documentation, guides, community
     
     📧 Contact: hello@vivelune.com
     
-
-Star History
-https://api.star-history.com/svg?repos=Vivelune/Vivelune_Business&type=Date
 
 Join the future of workflow automation today!
 
