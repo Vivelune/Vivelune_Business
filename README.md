@@ -3,18 +3,12 @@
 The Next-Generation Workflow Automation Platform
 Connect AI models, APIs, and services into production-ready automation flows
 
-https://img.shields.io/badge/Next.js-15-black?logo=next.js
-https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript
-https://img.shields.io/badge/PostgreSQL-16-blue?logo=postgresql
-https://img.shields.io/badge/Prisma-ORM-purple?logo=prisma
-https://img.shields.io/badge/Deployed_on-Vercel-black?logo=vercel
-https://img.shields.io/badge/Live_Demo-vivelune.com-brightgreen
 
 🎯 Live Application: https://vivelune.com
 📖 Documentation: View Architecture Guide
 🚀 Getting Started: Quick Start
-
 </div>
+
 
 <h2>🌟 Why Vivelune?</h2>
 Vivelune solves the modern automation paradox: powerful tools shouldn't require complex setup. In an era where businesses need to connect AI models, SaaS platforms, and custom APIs, traditional automation tools fall short. Vivelune bridges this gap with:
@@ -29,7 +23,8 @@ Vivelune solves the modern automation paradox: powerful tools shouldn't require 
 
 🎨 Visual Demo
 
-<div align="center">
+<
+div align="center">
 graph LR
     A[Google Form Trigger] --> B[OpenAI Analysis]
     B --> C[HTTP API Call]
@@ -68,6 +63,7 @@ Infrastructure:
   - Resend for email delivery
   - Real-time WebSocket updates
 
+
 Business Ready
 Enterprise Security: Bank-grade encryption and isolation
 
@@ -77,12 +73,18 @@ Scalable Pricing: Free tier to enterprise plans
 
 Professional Support: Documentation, guides, community
 
+
 📞 Contact & Support
 <div align="center">
-🚀 Live Application: https://vivelune.com
-🐛 Issue Tracker: GitHub Issues
-💬 Discussions: GitHub Discussions
-📧 Contact: hello@vivelune.com
+    
+    🚀 Live Application: https://vivelune.com
+    
+    🐛 Issue Tracker: GitHub Issues
+    
+    💬 Discussions: GitHub Discussions
+    
+    📧 Contact: hello@vivelune.com
+    
 
 Star History
 https://api.star-history.com/svg?repos=Vivelune/Vivelune_Business&type=Date
@@ -93,14 +95,20 @@ Join the future of workflow automation today!
 
 
 📄 License
+
 © 2025 Vivelune. All rights reserved. This project is proprietary software.
+
 
 <div align="center">
 Built with passion for the future of automation
+    
 "The best way to predict the future is to invent it." – Alan Kay
 
 </div>
+
+
 🎯 Next Steps
+
 Try the Live Demo: https://vivelune.com
 
 Star the Repository ⭐ 
