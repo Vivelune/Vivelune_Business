@@ -26,12 +26,12 @@ export const auth = betterAuth({
   // },
   socialProviders: {
         github: { 
-            clientId: process.env.NODE_ENV === "development" ? process.env.GITHUB_CLIENT_ID as string : process.env.GITHUB_CLIENT_ID_PRODUCTION as string, 
-            clientSecret: process.env.NODE_ENV === "development" ? process.env.GITHUB_CLIENT_SECRET as string: process.env.GITHUB_CLIENT_SECRET_PRODUCTION as string,
+            clientId:process.env.GITHUB_CLIENT_ID_PRODUCTION as string, 
+            clientSecret: process.env.GITHUB_CLIENT_SECRET_PRODUCTION as string,
         }, 
         google: { 
-            clientId:  process.env.NODE_ENV === "development" ? process.env.GOOGLE_CLIENT_ID as string : process.env.GOOGLE_CLIENT_ID_PRODUCTION as string,
-            clientSecret: process.env.NODE_ENV === "development" ? process.env.GOOGLE_CLIENT_SECRET as string: process.env.GOOGLE_CLIENT_SECRET_PRODUCTION as string,
+            clientId: process.env.GOOGLE_CLIENT_ID_PRODUCTION as string,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET_PRODUCTION as string,
         }, 
     },
  plugins: [
@@ -45,13 +45,11 @@ export const auth = betterAuth({
                 checkout({
                     products: [
                         {
-                            productId: process.env.NODE_ENV === "development"
-                                ? "e1a5782b-7524-4aa0-88da-50291670c359"
-                                : "e1a5782b-7524-4aa0-88da-50291670c359",
+                            productId: "e1a5782b-7524-4aa0-88da-50291670c359",
                             slug: "Vivelune-Pro" // Custom slug for easy reference in Checkout URL, e.g. /checkout/Vivelune-Pro
                         }
                     ],
-                    successUrl:  process.env.NODE_ENV ==="development" ? process.env.POLAR_SUCCESS_URL : process.env.POLAR_SUCCESS_URL_PRODUCTION,
+                    successUrl:  process.env.POLAR_SUCCESS_URL_PRODUCTION,
                     authenticatedUsersOnly: true
                 }),
                 portal(),
