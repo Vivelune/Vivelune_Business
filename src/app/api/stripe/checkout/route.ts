@@ -3,12 +3,18 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/server/prisma'
 import { stripe } from '@/lib/stripe'
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
     const { userId } = await auth()
     
     if (!userId) {
       return new NextResponse('Unauthorized', { status: 401 })
+    }
+
+    const { priceId } = await req.json()
+
+    if (!priceId) {
+      return new NextResponse('Price ID is required', { status: 400 })
     }
 
     // Get user from database
@@ -20,7 +26,7 @@ export async function POST() {
       return new NextResponse('User not found', { status: 404 })
     }
 
-    // If user doesn't have a Stripe customer ID, create one
+    // Create or get Stripe customer
     let stripeCustomerId = user.stripeCustomerId
     
     if (!stripeCustomerId) {
@@ -35,22 +41,33 @@ export async function POST() {
       
       stripeCustomerId = customer.id
       
-      // Save the customer ID to your database
       await prisma.user.update({
         where: { id: user.id },
         data: { stripeCustomerId },
       })
     }
 
-    // Create a billing portal session
-    const session = await stripe.billingPortal.sessions.create({
+    // Create checkout session
+    const session = await stripe.checkout.sessions.create({
       customer: stripeCustomerId,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/workflows`,
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/workflows?success=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/pricing?canceled=true`,
+      metadata: {
+        userId: user.id,
+        clerkId: userId,
+      },
     })
 
     return NextResponse.json({ url: session.url })
   } catch (error) {
-    console.error('Error creating portal session:', error)
+    console.error('Error creating checkout session:', error)
     return new NextResponse(
       error instanceof Error ? error.message : 'Internal Server Error', 
       { status: 500 }
