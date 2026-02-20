@@ -21,7 +21,9 @@ export const StripeTriggerDialog = ({
     const workflowId = params.workflowId as string;
 
     //Construct webhook url
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000" 
+    const baseUrl = process.env.NODE_ENV === "development"
+    ? process.env.NEXT_PUBLIC_APP_URL_DEVELOPMENT
+    : process.env.NEXT_PUBLIC_APP_URL; 
     const webhookUrl = `${baseUrl}/api/webhooks/stripe?workflowId=${workflowId}`
     
     const copyToClipboard = async ()=>{

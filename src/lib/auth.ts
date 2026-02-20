@@ -9,6 +9,11 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  trustedOrigins: [
+    process.env.NODE_ENV==="development" 
+    ? process.env.BETTER_AUTH_URL_DEVELOPMENT
+    : process.env.BETTER_AUTH_URL,
+  ].filter(Boolean) as string[],
   
   emailAndPassword:{
     enabled: true,
@@ -49,7 +54,9 @@ export const auth = betterAuth({
                             slug: "Vivelune-Pro" // Custom slug for easy reference in Checkout URL, e.g. /checkout/Vivelune-Pro
                         }
                     ],
-                    successUrl:  process.env.POLAR_SUCCESS_URL_PRODUCTION,
+                    successUrl:  process.env.NODE_ENV ==='development' 
+                    ?process.env.POLAR_SUCCESS_URL_DEVELOPMENT
+                    :process.env.POLAR_SUCCESS_URL,
                     authenticatedUsersOnly: true
                 }),
                 portal(),

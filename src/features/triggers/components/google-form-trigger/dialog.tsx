@@ -22,7 +22,7 @@ export const GoogleFormTriggerDialog = ({
     const workflowId = params.workflowId as string;
 
     //Construct webhook url
-    const baseUrl =  process.env.NEXT_PUBLIC_APP_URL_PRODUCTION
+    const baseUrl =  process.env.NODE_ENV ==="development"  ? process.env.NEXT_PUBLIC_APP_URL_DEVELOPMENT : process.env.NEXT_PUBLIC_APP_URL
     const webhookUrl = `${baseUrl}/api/webhooks/google-form?workflowId=${workflowId}`
     
     const copyToClipboard = async ()=>{

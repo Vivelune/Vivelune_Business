@@ -6,7 +6,7 @@ const globalForPrisma = global as unknown as {
 }
 
 const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL_DEVELOPMENT,
+  connectionString: process.env.NODE_ENV === "development" ? process.env.DATABASE_URL_DEVELOPMENT : process.env.DATABASE_URL,
 })
 
 const prisma = globalForPrisma.prisma || new PrismaClient({
