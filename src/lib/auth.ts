@@ -68,8 +68,8 @@ export const auth = betterAuth({
                         }
                     ],
                     successUrl: process.env.NODE_ENV === 'development'
-                        ? process.env.POLAR_SUCCESS_URL_DEVELOPMENT
-                        : process.env.POLAR_SUCCESS_URL,
+                        ? `${process.env.POLAR_SUCCESS_URL_DEVELOPMENT}/workflows`
+                        : `${process.env.POLAR_SUCCESS_URL}/workflows`,
                     authenticatedUsersOnly: true,
                 }),
                 portal(),
