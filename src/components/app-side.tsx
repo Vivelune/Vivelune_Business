@@ -21,6 +21,7 @@ import { auth } from "@/lib/auth";
 import { useHasActiveSubscription } from "@/features/subscriptions/hooks/use-subscription";
 
 
+
 const menuItems = [
     {
         title: "Main",
@@ -48,8 +49,16 @@ const menuItems = [
     }
 ]
 
-
 export const AppSidebar = () => {
+
+
+    const ADMIN_EMAIL = "shafiqueeee.atif@gmail.com"
+
+
+const {
+    data: session,
+    isPending
+} = authClient.useSession();
 
     const router = useRouter();
     const pathname = usePathname();
@@ -116,6 +125,15 @@ export const AppSidebar = () => {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 )}
+                {session?.user?.email === ADMIN_EMAIL &&(
+                <SidebarMenuItem>
+                        <SidebarMenuButton tooltip="Upgrade to Pro"
+                         className="gap-x-4"
+                         onClick={()=>{authClient.checkout({slug:"vivelune-powerhouse"})}}>
+                            <StarIcon className="h-4 w-4"/>
+                            <span>Get Vivelune PowerHouse</span>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>)}
 
                     <SidebarMenuItem>
                         <SidebarMenuButton tooltip="Billing Portal" className="gap-x-4" onClick={()=>{authClient.customer.portal()}}>

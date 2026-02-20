@@ -6,6 +6,9 @@ import { polarClient } from "./polar";
 // import { sendEmail } from "./email"; // Uncomment when email is configured
 
 export const auth = betterAuth({
+
+
+    
     database: prismaAdapter(prisma, {
         provider: "postgresql",
     }),
@@ -30,6 +33,7 @@ export const auth = betterAuth({
     //     },
     // },
     
+    
     socialProviders: {
         github: {
             clientId: process.env.GITHUB_CLIENT_ID_PRODUCTION as string,
@@ -41,8 +45,11 @@ export const auth = betterAuth({
         },
     },
     
+    
     plugins: [
-        polar({
+        
+        polar(
+            {
             client: polarClient,
             createCustomerOnSignUp: true,
             customer: {
@@ -52,9 +59,13 @@ export const auth = betterAuth({
                 checkout({
                     products: [
                         {
-                            productId: "e1a5782b-7524-4aa0-88da-50291670c359",
+                            productId: (process.env.NODE_ENV ==="development" ? "e1a5782b-7524-4aa0-88da-50291670c359" : "e1a5782b-7524-4aa0-88da-50291670c359"),
                             slug: "Vivelune-Pro", // Custom slug for easy reference
                         },
+                        {
+                            productId:"7e0e35bc-304d-48ff-a3d2-45613fdfb73f",
+                            slug:"vivelune-powerhouse"
+                        }
                     ],
                     successUrl: process.env.NODE_ENV === 'development'
                         ? process.env.POLAR_SUCCESS_URL_DEVELOPMENT
