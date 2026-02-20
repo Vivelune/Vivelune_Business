@@ -5,5 +5,5 @@ export const polarClient = new Polar({
     ? process.env.POLAR_ACCESS_TOKEN_DEVELOPMENT
     : process.env.POLAR_ACCESS_TOKEN,
     
-    server:"production", // TODO: CHANGE IN PRODUCTION
+    server:process.env.NODE_ENV === "development" ? "sandbox" : "production", // TODO: CHANGE IN PRODUCTION
 })
