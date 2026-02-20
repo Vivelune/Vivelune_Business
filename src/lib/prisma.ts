@@ -5,12 +5,20 @@ const globalForPrisma = global as unknown as {
     prisma: PrismaClient
 }
 
+const connectionString = process.env.NODE_ENV === "development" 
+    ? process.env.DATABASE_URL_DEVELOPMENT 
+    : process.env.DATABASE_URL
+
+if (!connectionString) {
+    throw new Error('Database connection string is not defined')
+}
+
 const adapter = new PrismaPg({
-  connectionString: process.env.NODE_ENV === "development" ? process.env.DATABASE_URL_DEVELOPMENT : process.env.DATABASE_URL,
+    connectionString,
 })
 
 const prisma = globalForPrisma.prisma || new PrismaClient({
-  adapter,
+    adapter,
 })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
