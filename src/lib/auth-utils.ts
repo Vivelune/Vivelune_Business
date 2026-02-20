@@ -1,21 +1,22 @@
-import {headers} from 'next/headers';
-import { redirect } from 'next/navigation';
-import { auth } from './auth';
+import { auth } from '@clerk/nextjs/server'
+import { redirect } from 'next/navigation'
 
 export const requireAuth = async () => {
-  const session = await auth.api.getSession({ headers: await headers() });
-
-  if (!session) {
-    redirect('/login');
-  } 
-  return session;
+  const { userId } = await auth()
+  
+  if (!userId) {
+    redirect('/login')
+  }
+  
+  return { userId }
 }
 
 export const requireUnauth = async () => {
-  const session = await auth.api.getSession({ headers: await headers() });
-
-  if (session) {
-    redirect('/workflows');
-  } 
-  return session;
+  const { userId } = await auth()
+  
+  if (userId) {
+    redirect('/workflows')
+  }
+  
+  return null
 }

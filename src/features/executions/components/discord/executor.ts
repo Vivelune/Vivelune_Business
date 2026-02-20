@@ -2,7 +2,7 @@ import type { NodeExecutor } from "@/features/executions/types";
 import { NonRetriableError } from "inngest";
 import Handlebars from "handlebars";
 import {generateText} from "ai"
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/server/prisma";
 import { discordChannel } from "@/inngest/channels/discord";
 import {decode} from "html-entities"
 import ky from "ky";

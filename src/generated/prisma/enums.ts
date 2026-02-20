@@ -9,6 +9,28 @@
 * 🟢 You can import this file directly.
 */
 
+export const SubscriptionStatus = {
+  ACTIVE: 'ACTIVE',
+  PAST_DUE: 'PAST_DUE',
+  CANCELED: 'CANCELED',
+  UNPAID: 'UNPAID',
+  INCOMPLETE: 'INCOMPLETE',
+  INCOMPLETE_EXPIRED: 'INCOMPLETE_EXPIRED',
+  TRIALING: 'TRIALING',
+  PAUSED: 'PAUSED'
+} as const
+
+export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
+
+
+export const PlanType = {
+  PRO: 'PRO',
+  ENTERPRISE: 'ENTERPRISE'
+} as const
+
+export type PlanType = (typeof PlanType)[keyof typeof PlanType]
+
+
 export const NodeType = {
   INITIAL: 'INITIAL',
   MANUAL_TRIGGER: 'MANUAL_TRIGGER',

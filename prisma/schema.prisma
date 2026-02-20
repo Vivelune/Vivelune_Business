@@ -13,68 +13,135 @@ datasource db {
   provider = "postgresql"
 }
 
+// UPDATED: User model for Clerk authentication
 model User {
-  id            String    @id
-  name          String
+  id            String    @id @default(cuid())
   email         String
-  emailVerified Boolean   @default(false)
-  image         String?
+  firstName     String?
+  lastName      String?
+  name          String?   // Keep for backward compatibility
+  imageUrl      String?
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+  updatedAt     DateTime  @updatedAt
+  
+  // Clerk specific fields
+  clerkId       String    @unique
+  emailVerified Boolean   @default(false)
+  
+  // Stripe fields
+  stripeCustomerId      String?  @unique  // Stripe customer ID
+  stripeSubscriptionId  String?  @unique  // Current active subscription ID
+  
+  // Relations
   workflows     Workflow[]
   credentials   Credential[]
+  subscriptions Subscription[]  // History of subscriptions
+  invoices      Invoice[]       // User's invoices
 
   @@unique([email])
   @@map("user")
 }
 
-model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+// NEW: Subscription model for Stripe
+model Subscription {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Stripe subscription fields
+  stripeSubscriptionId  String   @unique
+  stripeCustomerId      String
+  stripePriceId         String
+  stripeProductId       String
+  
+  // Subscription status
+  status        SubscriptionStatus @default(ACTIVE)
+  
+  // Plan details
+  planType      PlanType  // e.g., PRO, ENTERPRISE
+  interval      String?   // month, year
+  
+  // Dates
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean  @default(false)
+  canceledAt         DateTime?
+  trialStart         DateTime?
+  trialEnd           DateTime?
+  
+  // Metadata
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  @@unique([token])
-  @@map("session")
+  // Relations
+  invoices      Invoice[]  // Invoices related to this subscription
+
+  @@map("subscription")
 }
 
-model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+// NEW: Invoice model for Stripe invoices
+model Invoice {
+  id              String    @id @default(cuid())
+  stripeInvoiceId String    @unique
+  stripeCustomerId String
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id])
+  
+  // Invoice details
+  amount          Int       // in cents
+  currency        String
+  status          String    // paid, open, void, etc.
+  
+  // Dates
+  created         DateTime
+  paidAt          DateTime?
+  
+  // PDF URL
+  invoicePdf      String?
+  
+  // Relations
+  subscriptionId  String?
+  subscription    Subscription? @relation(fields: [subscriptionId], references: [id])
 
-  @@map("account")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("invoice")
 }
 
-model Verification {
-  id         String   @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
+// NEW: WebhookEvent model to track Stripe webhook events (idempotency)
+model WebhookEvent {
+  id              String    @id @default(cuid())
+  stripeEventId   String    @unique
+  type            String
+  processed       Boolean   @default(false)
+  processedAt     DateTime?
+  error           String?
+  
+  createdAt       DateTime  @default(now())
 
-  @@map("verification")
+  @@map("webhook_event")
 }
 
+// Enums
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+  PAUSED
+}
+
+enum PlanType {
+  PRO
+  ENTERPRISE
+  // Add more plans as needed
+}
+
+// Keep existing models below - NO CHANGES NEEDED
 model Credential{
   id String @id @default(cuid())
   name String
@@ -89,7 +156,6 @@ model Credential{
   Node Node[]
 }
 
-
 model Workflow{
   id         String   @id @default(cuid())
   name       String
@@ -102,7 +168,7 @@ model Workflow{
 
   userId String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  }
+}
 
 enum NodeType{
   INITIAL
@@ -117,8 +183,6 @@ enum NodeType{
   DISCORD
   SLACK
 }
-
-
 
 model Node{
     id String @id @default(cuid())
@@ -136,12 +200,9 @@ model Node{
     outputConnections Connection[] @relation("FromNode")
     inputConnections Connection[] @relation("ToNode")
     
-
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
-
-  }
-
+}
 
 enum CredentialType {
   OPENAI
@@ -150,20 +211,16 @@ enum CredentialType {
   DEEPSEEK
 }
 
-
-  model Connection {
+model Connection {
     id String @id @default(cuid())
     workflowId String
     workflow Workflow @relation(fields: [workflowId], references:[id], onDelete: Cascade)
 
-
     fromNodeId String
     fromNode Node @relation("FromNode", fields: [fromNodeId], references:[id], onDelete: Cascade )
     
-
     toNodeId String
     toNode Node @relation("ToNode", fields: [toNodeId], references:[id], onDelete: Cascade )
-
 
     fromOutput String @default("main")
     toInput String @default("main")
@@ -171,24 +228,17 @@ enum CredentialType {
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
 
-
     @@unique([fromNodeId, toNodeId,fromOutput, toInput ])
-  }
+}
 
-
-
-
-  enum ExecutionStatus {
+enum ExecutionStatus {
     RUNNING
     SUCCESS
     FAILED
-  }
+}
 
-
-
-  model Execution {
+model Execution {
     id String @id @default(cuid())
-
 
     workflowId String
     workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
@@ -203,4 +253,4 @@ enum CredentialType {
     inngestEventId String @unique
 
     output Json?
-  }
+}

@@ -16,9 +16,8 @@ import { usePathname, useRouter } from "next/navigation";
 import {
     Sidebar, SidebarContent, SidebarFooter, SidebarGroup,SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { authClient } from "@/lib/auth-client";
-import { auth } from "@/lib/auth";
 import { useHasActiveSubscription } from "@/features/subscriptions/hooks/use-subscription";
+import { useUser, useClerk } from '@clerk/nextjs'
 
 
 const menuItems = [
@@ -50,10 +49,31 @@ const menuItems = [
 
 
 export const AppSidebar = () => {
+    const router = useRouter()
+    const pathname = usePathname()
+    const { user } = useUser()
+    const { signOut } = useClerk()
+    const { hasActiveSubscription, isLoading } = useHasActiveSubscription()
 
-    const router = useRouter();
-    const pathname = usePathname();
-    const {hasActiveSubscription, isLoading}= useHasActiveSubscription()
+
+    const handleUpgrade = () => {
+        // Redirect to pricing page or create Stripe checkout session
+        window.location.href = '/pricing' // Or your pricing page
+      }
+
+      const handleBillingPortal = async () => {
+        try {
+          const response = await fetch('/api/stripe/portal', { method: 'POST' })
+          const data = await response.json()
+          if (data.url) {
+            window.location.href = data.url
+          }
+        } catch (error) {
+          console.error('Failed to open billing portal:', error)
+        }
+      }
+
+
     return (
         <Sidebar collapsible="icon">
             <SidebarHeader>
@@ -65,6 +85,11 @@ export const AppSidebar = () => {
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
+                {user && (
+          <div className="px-4 py-2 text-sm text-muted-foreground">
+            {user.emailAddresses[0]?.emailAddress}
+          </div>
+        )}
             </SidebarHeader>
             <SidebarContent>
                 {menuItems.map((group) => (
@@ -110,7 +135,7 @@ export const AppSidebar = () => {
                     <SidebarMenuItem>
                         <SidebarMenuButton tooltip="Upgrade to Pro"
                          className="gap-x-4"
-                         onClick={()=>{authClient.checkout({slug:"Vivelune-Pro"})}}>
+                         >
                             <StarIcon className="h-4 w-4"/>
                             <span>Get Vivelune Pro</span>
                         </SidebarMenuButton>
@@ -118,23 +143,21 @@ export const AppSidebar = () => {
                 )}
 
                     <SidebarMenuItem>
-                        <SidebarMenuButton tooltip="Billing Portal" className="gap-x-4" onClick={()=>{authClient.customer.portal()}}>
+                        <SidebarMenuButton tooltip="Billing Portal" className="gap-x-4" >
                             <CreditCardIcon className="h-4 w-4"/>
                             <span>Billing Portal</span>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
 
                     <SidebarMenuItem>
-                        <SidebarMenuButton tooltip="Sign Out" className="gap-x-4" onClick={()=>authClient.signOut({
-                            fetchOptions:{
-                                onSuccess:()=>{
-                                    router.push("/login")
-                                }
-                            }
-                        })}>
-                            <LogOutIcon className="h-4 w-4"/>
-                            <span>Sign Out</span>
-                        </SidebarMenuButton>
+                    <SidebarMenuButton 
+              tooltip="Sign Out" 
+              className="gap-x-4" 
+              onClick={() => signOut(() => router.push('/'))}
+            >
+              <LogOutIcon className="h-4 w-4"/>
+              <span>Sign Out</span>
+            </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>

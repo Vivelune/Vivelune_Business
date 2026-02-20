@@ -4,7 +4,7 @@ import Handlebars from "handlebars";
 import {generateText} from "ai"
 import { anthropicChannel } from "@/inngest/channels/anthropic";
 import {createAnthropic} from "@ai-sdk/anthropic"
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/server/prisma";
 import { decrypt } from "@/lib/encryption";
 
 Handlebars.registerHelper("json" , (context) => {

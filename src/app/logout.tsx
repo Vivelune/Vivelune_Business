@@ -1,21 +1,16 @@
-"use client"
-import { Button } from "@/components/ui/button"
-import { authClient } from "@/lib/auth-client"
-import { useRouter } from "next/navigation"
+'use client'
+
+import { useClerk } from '@clerk/nextjs'
+import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
 
 export const LogoutButton = () => {
+  const { signOut } = useClerk()
+  const router = useRouter()
 
-    const router = useRouter()
-    return(
-        <Button onClick={()=> authClient.signOut({
-            fetchOptions: {
-                onSuccess: () => {
-                    router.push('/login')
-                }
-            }
-        })}>
-            Logout
-        </Button>
-    )
+  return (
+    <Button onClick={() => signOut(() => router.push('/'))}>
+      Logout
+    </Button>
+  )
 }
-

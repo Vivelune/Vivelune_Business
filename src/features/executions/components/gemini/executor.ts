@@ -4,7 +4,7 @@ import Handlebars from "handlebars";
 import {generateText} from "ai"
 import { geminiChannel } from "@/inngest/channels/gemini";
 import {createGoogleGenerativeAI} from "@ai-sdk/google";
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/server/prisma";
 import { decrypt } from "@/lib/encryption";
 
 Handlebars.registerHelper("json" , (context) => {

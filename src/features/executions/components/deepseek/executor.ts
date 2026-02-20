@@ -4,7 +4,7 @@ import Handlebars from "handlebars";
 import {generateText} from "ai"
 import {createDeepSeek} from "@ai-sdk/deepseek"
 import { deepseekChannel } from "@/inngest/channels/deepseek";
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/server/prisma";
 import { decrypt } from "@/lib/encryption";
 
 Handlebars.registerHelper("json" , (context) => {

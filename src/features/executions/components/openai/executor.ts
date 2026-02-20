@@ -4,7 +4,7 @@ import Handlebars from "handlebars";
 import {generateText} from "ai"
 import {createOpenAI} from "@ai-sdk/openai";
 import { openAiChannel } from "@/inngest/channels/openai";
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/server/prisma";
 import { decrypt } from "@/lib/encryption";
 
 Handlebars.registerHelper("json" , (context) => {

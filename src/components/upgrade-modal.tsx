@@ -10,8 +10,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { authClient } from "@/lib/auth-client"
-
+import { useRouter } from "next/navigation"
 
 interface UpgradeModalProps {
     open:boolean;
@@ -21,23 +20,30 @@ interface UpgradeModalProps {
 export const UpgradeModal = ({
     open, onOpenChange
 }:UpgradeModalProps)=>{
+    const router = useRouter()
+
+    const handleUpgrade = () => {
+        // Redirect to your pricing page or Stripe checkout
+        router.push('/pricing')
+        onOpenChange(false)
+    }
+
     return(
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    Upgrade To Pro
-                
-                <AlertDialogDescription>
-                    You need an active subscription to perform this action.
-                    Upgrade to Pro to unlock all features.
-                </AlertDialogDescription>
+                    <AlertDialogTitle>Upgrade To Pro</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        You need an active subscription to perform this action.
+                        Upgrade to Pro to unlock all features.
+                    </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>
                         Cancel
                     </AlertDialogCancel>
-                    <AlertDialogAction onClick={()=>{authClient.checkout({slug:"Vivelune-Pro"})}}>
-                            Upgrade Now
+                    <AlertDialogAction onClick={handleUpgrade}>
+                        Upgrade Now
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
