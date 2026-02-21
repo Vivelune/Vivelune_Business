@@ -125,6 +125,7 @@ const {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 )}
+               
                 {session?.user?.email === ADMIN_EMAIL &&(
                 <SidebarMenuItem>
                         <SidebarMenuButton tooltip="Upgrade to Pro"
@@ -134,6 +135,7 @@ const {
                             <span>Get Vivelune PowerHouse</span>
                         </SidebarMenuButton>
                     </SidebarMenuItem>)}
+                
 
                     <SidebarMenuItem>
                         <SidebarMenuButton tooltip="Billing Portal" className="gap-x-4" onClick={()=>{authClient.customer.portal()}}>
