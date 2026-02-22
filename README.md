@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Vivelune - AI Automation Workflow Builder
+https://public/vivelune-square-logo.png
 
-## Getting Started
+Vivelune is a modern, open-core automation workflow builder that connects AI, APIs, and services into reliable, observable flows. Design visually, execute with intelligence, and monitor everything in real-time.
 
-First, run the development server:
+🌐 Live at: https://www.vivelune.com
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+✨ Features
+Visual Workflow Builder – Drag-and-drop interface powered by React Flow
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+AI-Native Automation – Integrate with OpenAI, Anthropic Claude, Google Gemini, and DeepSeek
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Multi-Channel Triggers – Manual, Google Forms, Stripe events, HTTP requests
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Rich Action Nodes – HTTP requests, Discord, Slack, and AI model interactions
 
-## Learn More
+Real-time Execution Status – Live node updates via Inngest Realtime
 
-To learn more about Next.js, take a look at the following resources:
+Secure Credential Management – Encrypted API key storage
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Execution History – Full observability with logs, errors, and stack traces
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Subscription Management – Polar.sh integration for premium features
 
-## Deploy on Vercel
+Responsive Design – Mobile-friendly sidebar and layouts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+🛠️ Tech Stack
+Frontend
+Next.js 15 (App Router, Turbopack)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+React 19
+
+TypeScript
+
+Tailwind CSS 4
+
+Shadcn UI + Radix UI primitives
+
+React Flow – Node-based workflow editor
+
+GSAP – Marketing page animations
+
+Jotai – State management
+
+TanStack Query – Data fetching & caching
+
+nuqs – URL search params state
+
+React Hook Form + Zod – Form validation
+
+Backend & APIs
+tRPC – End-to-end typesafe APIs
+
+Better Auth – Authentication (email/password, GitHub, Google)
+
+Prisma – PostgreSQL ORM
+
+Inngest – Workflow execution engine with Realtime
+
+Polar.sh – Subscription & payment handling
+
+Resend – Email verification
+
+AI Integrations (via Vercel AI SDK)
+OpenAI (GPT-4o-mini)
+
+Anthropic Claude (claude-3-5-haiku)
+
+Google Gemini (gemini-3-flash)
+
+DeepSeek (deepseek-reasoner)
+
+External Services
+Discord & Slack webhooks
+
+Google Forms trigger
+
+Stripe webhook integration
+
+Sentry – Error tracking & monitoring
+
+Infrastructure
+Hostinger VPS / Shared Hosting
+
+PostgreSQL database
+
+Inngest Dev Server / Cloud
+
+Node.js runtime
+
+🚀 Getting Started
+Prerequisites
+Node.js 20+
+
+PostgreSQL database
+
+Inngest account (for production)
+
+Polar.sh account (for subscriptions)
+
+API keys for AI providers (optional)
