@@ -17,7 +17,7 @@ export const workflowsRouter = createTRPCRouter({
         const workflow = await prisma.workflow.findUniqueOrThrow({
             where:{
                 id:input.id,
-                userId: ctx.auth.user.id,  
+                userId: ctx.auth.userId,  
             }
     })
     // await inngest.send({
@@ -37,7 +37,7 @@ export const workflowsRouter = createTRPCRouter({
         return prisma.workflow.create({
             data:{
                 name:generateSlug(3),
-                userId:ctx.auth.user.id,
+                userId:ctx.auth.userId,
                 nodes: {
                     create:{
                     type: NodeType.INITIAL,
@@ -54,7 +54,7 @@ export const workflowsRouter = createTRPCRouter({
         return prisma.workflow.delete({
             where:{
                 id: input.id,
-                userId: ctx.auth.user.id
+                userId: ctx.auth.userId
             }
         })
         
@@ -84,7 +84,7 @@ export const workflowsRouter = createTRPCRouter({
        const {id, nodes, edges} = input;
 
        const workflow = await prisma.workflow.findUniqueOrThrow({
-        where:{id, userId:ctx.auth.user.id}
+        where:{id, userId:ctx.auth.userId}
        })
         return await prisma.$transaction(async(tx)=>{
             await tx.node.deleteMany({
@@ -129,7 +129,7 @@ export const workflowsRouter = createTRPCRouter({
         return prisma.workflow.update({
             where:{
                 id:input.id,
-                userId: ctx.auth.user.id
+                userId: ctx.auth.userId
             },
             data:{
                 name: input.name 
@@ -142,7 +142,7 @@ export const workflowsRouter = createTRPCRouter({
         const workflow = await prisma.workflow.findUniqueOrThrow({
             where: {
                  id:input.id,
-                userId: ctx.auth.user.id
+                userId: ctx.auth.userId
             },
             include:{nodes: true, connections: true,}
         });
@@ -197,7 +197,7 @@ export const workflowsRouter = createTRPCRouter({
 
             where: {
                  
-                userId: ctx.auth.user.id,
+                userId: ctx.auth.userId,
                 name:{
                     contains:search,
                     mode:"insensitive",
@@ -209,7 +209,7 @@ export const workflowsRouter = createTRPCRouter({
         }),
           prisma.workflow.count({
         where:{
-            userId:ctx.auth.user.id,
+            userId:ctx.auth.userId,
             name:{
                 contains:search,
                 mode:"insensitive"
