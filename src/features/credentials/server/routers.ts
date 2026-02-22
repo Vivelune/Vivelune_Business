@@ -4,9 +4,10 @@ import z from "zod";
 import { PAGINATION } from "@/config/constants";
 import { CredentialType } from "@/generated/prisma/enums";
 import { encrypt } from "@/lib/encryption";
+import { TRPCError } from "@trpc/server";
 
 export const credentialsRouter = createTRPCRouter({
-  create: premiumProcedure
+    create: premiumProcedure
     .input(
       z.object({
         name: z.string().min(1, "Name is required"),
@@ -14,19 +15,27 @@ export const credentialsRouter = createTRPCRouter({
         value: z.string().min(1, "Value is required"),
       })
     )
-    .mutation(({ ctx, input }) => {
-      // Type assertion - premiumProcedure guarantees auth exists
-      const auth = ctx.auth!;
-      const { name, value, type } = input;
-
-      return prisma.credential.create({
-        data: {
-          name: name,
-          userId: auth.userId,
-          type,
-          value: encrypt(value),
-        },
-      });
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Type assertion - premiumProcedure guarantees auth exists
+        const auth = ctx.auth!;
+        const { name, value, type } = input;
+  
+        return await prisma.credential.create({
+          data: {
+            name: name,
+            userId: auth.userId,
+            type,
+            value: encrypt(value),
+          },
+        });
+      } catch (error) {
+        console.error('Failed to create credential:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to create credential',
+        });
+      }
     }),
 
   remove: protectedProcedure
