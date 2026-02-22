@@ -104,7 +104,7 @@ async function updateSubscriptionInDb(
 ) {
   // Stripe timestamps are in seconds; JS Date needs milliseconds.
   // We use the optional chaining or a null check to ensure we don't pass NaN.
-  const periodEndSeconds = subscription.trial_end;
+  const periodEndSeconds = subscription.cancel_at;
   
   if (!periodEndSeconds) {
     throw new Error(`Missing current_period_end for subscription ${subscription.id}`);
