@@ -8,37 +8,49 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 export async function POST(req: Request) {
+  const requestId = Math.random().toString(36).substring(7);
+  console.log(`🔔 [${requestId}] Stripe webhook received`);
+  
   try {
-    console.log('🔔 Stripe webhook received');
-    
     const body = await req.text();
     const headerPayload = await headers();
     const signature = headerPayload.get('stripe-signature');
 
     if (!signature) {
-      console.error('❌ No stripe-signature header found');
+      console.error(`❌ [${requestId}] No stripe-signature header found`);
       return new Response('No signature', { status: 400 });
     }
 
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-    console.log(process.env.STRIPE_WEBHOOK_SECRET, "STRIPE_WEBHOOK_SECRET")
+    console.log(`🔐 [${requestId}] Using webhook secret:`, webhookSecret?.substring(0, 10) + '...');
+    
     if (!webhookSecret) {
-      console.error('❌ STRIPE_WEBHOOK_SECRET not set');
+      console.error(`❌ [${requestId}] STRIPE_WEBHOOK_SECRET not set`);
       return new Response('Webhook secret not configured', { status: 500 });
+    }
+
+    // Test database connection first
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      console.log(`✅ [${requestId}] Database connected`);
+    } catch (dbConnError) {
+      console.error(`❌ [${requestId}] Database connection failed:`, dbConnError);
+      return new Response('Database connection failed', { status: 500 });
     }
 
     let event: Stripe.Event;
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-      console.log('✅ Webhook signature verified');
+      console.log(`✅ [${requestId}] Webhook signature verified`);
     } catch (err) {
-      console.error('❌ Webhook signature verification failed:', err);
+      console.error(`❌ [${requestId}] Webhook signature verification failed:`, err);
       return new Response(`Webhook Error: ${err instanceof Error ? err.message : 'Unknown error'}`, { 
         status: 400 
       });
     }
 
-    console.log('📦 Stripe event type:', event.type);
+    console.log(`📦 [${requestId}] Stripe event type:`, event.type);
+    console.log(`📦 [${requestId}] Event ID:`, event.id);
 
     // Handle different event types
     switch (event.type) {
@@ -48,7 +60,7 @@ export async function POST(req: Request) {
         // Get userId from multiple possible locations
         const userId = session.client_reference_id || session.metadata?.clerkUserId;
         
-        console.log('💰 Checkout completed!', {
+        console.log(`💰 [${requestId}] Checkout completed!`, {
           userId,
           sessionId: session.id,
           subscriptionId: session.subscription,
@@ -57,15 +69,56 @@ export async function POST(req: Request) {
           metadata: session.metadata,
         });
 
+        // Verify user exists in database
+        if (userId) {
+          const userExists = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, email: true }
+          });
+
+          if (!userExists) {
+            console.error(`❌ [${requestId}] User not found in database:`, userId);
+            // You might want to create the user here as a fallback
+            console.log(`📝 [${requestId}] Attempting to create missing user...`);
+            
+            try {
+              const newUser = await prisma.user.create({
+                data: {
+                  id: userId,
+                  email: `${userId}@stripe-user.com`,
+                  name: 'Stripe User',
+                  emailVerified: true,
+                  subscriptionStatus: 'inactive',
+                },
+              });
+              console.log(`✅ [${requestId}] Created missing user:`, newUser.id);
+            } catch (createError) {
+              console.error(`❌ [${requestId}] Failed to create user:`, createError);
+            }
+          } else {
+            console.log(`✅ [${requestId}] User found in database:`, userExists.email);
+          }
+        }
+
         if (userId && session.subscription) {
           try {
             // Get full subscription details from Stripe
+            console.log(`🔍 [${requestId}] Fetching subscription details:`, session.subscription);
             const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
             
-            // Use type assertion for Stripe object
+            // Use type assertion to access subscription properties
             const subscriptionData = subscription as any;
             
-            // Update user in database
+            console.log(`📦 [${requestId}] Subscription data:`, {
+              id: subscriptionData.id,
+              status: subscriptionData.status,
+              current_period_end: subscriptionData.current_period_end,
+              customer: subscriptionData.customer,
+            });
+
+            // Update user in database with detailed logging
+            console.log(`📝 [${requestId}] Updating user in database:`, userId);
+            
             const updatedUser = await prisma.user.update({
               where: { id: userId },
               data: {
@@ -76,17 +129,25 @@ export async function POST(req: Request) {
               },
             });
 
-            console.log(`✅ Updated subscription for user: ${userId}`, {
-              status: subscriptionData.status,
-              periodEnd: new Date(subscriptionData.current_period_end * 1000),
+            console.log(`✅ [${requestId}] Database updated successfully:`, {
+              userId: updatedUser.id,
+              status: updatedUser.subscriptionStatus,
+              subscriptionId: updatedUser.stripeSubscriptionId,
+              customerId: updatedUser.stripeCustomerId,
+              periodEnd: updatedUser.subscriptionPeriodEnd,
             });
+
           } catch (dbError) {
-            console.error('❌ Failed to update user in database:', dbError);
+            console.error(`❌ [${requestId}] Failed to update user in database:`, {
+              error: dbError instanceof Error ? dbError.message : dbError,
+              code: dbError instanceof Error ? (dbError as any).code : undefined,
+              userId,
+              subscriptionId: session.subscription,
+            });
           }
         } else {
-          console.log('⚠️ No userId found in session or no subscription:', {
-            client_reference_id: session.client_reference_id,
-            metadata: session.metadata,
+          console.log(`⚠️ [${requestId}] Missing userId or subscription:`, {
+            hasUserId: !!userId,
             hasSubscription: !!session.subscription,
           });
         }
@@ -97,22 +158,44 @@ export async function POST(req: Request) {
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
         
-        // Get userId from subscription metadata (set via subscription_data in checkout)
+        // Get userId from subscription metadata
         const userId = subscription.metadata?.clerkUserId;
         
-        // Use type assertion for Stripe object
+        // Use type assertion to access subscription properties
         const subscriptionData = subscription as any;
         
-        console.log('📝 Subscription updated:', {
+        console.log(`📝 [${requestId}] Subscription ${event.type}:`, {
           userId,
           subscriptionId: subscriptionData.id,
           status: subscriptionData.status,
           metadata: subscriptionData.metadata,
+          customer: subscriptionData.customer,
+          current_period_end: subscriptionData.current_period_end,
         });
 
         if (userId) {
           try {
-            await prisma.user.update({
+            // First check if user exists
+            const userExists = await prisma.user.findUnique({
+              where: { id: userId },
+              select: { id: true }
+            });
+
+            if (!userExists) {
+              console.log(`⚠️ [${requestId}] User not found, creating...`);
+              await prisma.user.create({
+                data: {
+                  id: userId,
+                  email: `${userId}@stripe-user.com`,
+                  name: 'Stripe User',
+                  emailVerified: true,
+                  subscriptionStatus: subscriptionData.status,
+                },
+              });
+            }
+
+            // Update subscription
+            const updatedUser = await prisma.user.update({
               where: { id: userId },
               data: {
                 subscriptionStatus: subscriptionData.status,
@@ -121,12 +204,16 @@ export async function POST(req: Request) {
                 subscriptionPeriodEnd: new Date(subscriptionData.current_period_end * 1000),
               },
             });
-            console.log(`✅ Updated subscription status for user: ${userId} to ${subscriptionData.status}`);
+
+            console.log(`✅ [${requestId}] Updated subscription status for user: ${userId}`, {
+              status: updatedUser.subscriptionStatus,
+              subscriptionId: updatedUser.stripeSubscriptionId,
+            });
           } catch (dbError) {
-            console.error('❌ Failed to update user subscription:', dbError);
+            console.error(`❌ [${requestId}] Failed to update user subscription:`, dbError);
           }
         } else {
-          console.log('⚠️ No userId found in subscription metadata');
+          console.log(`⚠️ [${requestId}] No userId found in subscription metadata`);
         }
         break;
       }
@@ -135,23 +222,23 @@ export async function POST(req: Request) {
         const subscription = event.data.object as Stripe.Subscription;
         const userId = subscription.metadata?.clerkUserId;
         
-        console.log('❌ Subscription cancelled:', {
+        console.log(`❌ [${requestId}] Subscription cancelled:`, {
           userId,
           subscriptionId: subscription.id,
         });
 
         if (userId) {
           try {
-            await prisma.user.update({
+            const updatedUser = await prisma.user.update({
               where: { id: userId },
               data: {
                 subscriptionStatus: 'canceled',
                 stripeSubscriptionId: null,
               },
             });
-            console.log(`✅ Marked subscription as canceled for user: ${userId}`);
+            console.log(`✅ [${requestId}] Marked subscription as canceled for user: ${userId}`);
           } catch (dbError) {
-            console.error('❌ Failed to update canceled subscription:', dbError);
+            console.error(`❌ [${requestId}] Failed to update canceled subscription:`, dbError);
           }
         }
         break;
@@ -160,27 +247,28 @@ export async function POST(req: Request) {
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
         const invoiceData = invoice as any;
-        console.log('💰 Payment succeeded for subscription:', invoiceData.subscription);
+        console.log(`💰 [${requestId}] Payment succeeded for subscription:`, invoiceData.subscription);
         break;
       }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
         const invoiceData = invoice as any;
-        console.log('⚠️ Payment failed for subscription:', invoiceData.subscription);
+        console.log(`⚠️ [${requestId}] Payment failed for subscription:`, invoiceData.subscription);
         break;
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        console.log(`📋 [${requestId}] Unhandled event type:`, event.type);
     }
 
-    return NextResponse.json({ received: true });
+    console.log(`✅ [${requestId}] Webhook processed successfully`);
+    return NextResponse.json({ received: true, requestId });
     
   } catch (error) {
-    console.error('❌ Stripe webhook error:', error);
+    console.error(`❌ [${requestId}] Stripe webhook error:`, error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', requestId },
       { status: 500 }
     );
   }
