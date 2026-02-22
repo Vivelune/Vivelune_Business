@@ -94,24 +94,30 @@ export async function POST(req: Request) {
             // Use type assertion to access subscription properties
             const subscriptionData = subscription as any;
             
-            console.log(`📅 [${requestId}] Subscription data:`, {
-              status: subscriptionData.status,
+            // ✅ FIX: Convert seconds to milliseconds
+            const periodEndTimestamp = subscriptionData.current_period_end * 1000;
+            const periodEndDate = new Date(periodEndTimestamp);
+            
+            console.log(`📅 [${requestId}] Date conversion:`, {
+              timestamp: subscriptionData.current_period_end,
+              timestampMs: periodEndTimestamp,
+              date: periodEndDate.toISOString(),
             });
 
-            // ✅ UPDATE WITHOUT subscriptionPeriodEnd
             const updatedUser = await prisma.user.update({
               where: { id: userId },
               data: {
                 stripeCustomerId: session.customer as string,
                 stripeSubscriptionId: session.subscription as string,
                 subscriptionStatus: subscriptionData.status,
-                // ❌ subscriptionPeriodEnd intentionally omitted
+                subscriptionPeriodEnd: periodEndDate,
               },
             });
 
             console.log(`✅ [${requestId}] Database updated:`, {
               userId: updatedUser.id,
               status: updatedUser.subscriptionStatus,
+              periodEnd: updatedUser.subscriptionPeriodEnd,
             });
 
           } catch (dbError) {
@@ -129,22 +135,26 @@ export async function POST(req: Request) {
         // Use type assertion to access subscription properties
         const subscriptionData = subscription as any;
         
+        // ✅ FIX: Convert seconds to milliseconds
+        const periodEndTimestamp = subscriptionData.current_period_end * 1000;
+        const periodEndDate = new Date();
+        
         console.log(`📝 [${requestId}] Subscription ${event.type}:`, {
           userId,
           subscriptionId: subscriptionData.id,
           status: subscriptionData.status,
+          periodEnd: periodEndDate.toISOString(),
         });
 
         if (userId) {
           try {
-            // ✅ UPDATE WITHOUT subscriptionPeriodEnd
             const updatedUser = await prisma.user.update({
               where: { id: userId },
               data: {
                 subscriptionStatus: subscriptionData.status,
                 stripeSubscriptionId: subscriptionData.id,
                 stripeCustomerId: subscriptionData.customer as string,
-                // ❌ subscriptionPeriodEnd intentionally omitted
+                subscriptionPeriodEnd: periodEndDate,
               },
             });
 
