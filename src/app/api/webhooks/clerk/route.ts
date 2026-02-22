@@ -5,6 +5,8 @@ import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
+  console.log('🔥🔥🔥 WEBHOOK ROUTE HIT AT:', new Date().toISOString());
+  console.log('🔥 Headers:', Object.fromEntries(req.headers.entries()));
   try {
     // Get the webhook secret from environment variables
     const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
