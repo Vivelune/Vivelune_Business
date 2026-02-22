@@ -21,7 +21,7 @@ export const credentialsRouter = createTRPCRouter({
         return prisma.credential.create({
             data:{
                 name:name,
-                userId:ctx.auth.user.id,
+                userId:ctx.auth.userId,
                 type,
                 value: encrypt(value)
             },
@@ -33,7 +33,7 @@ export const credentialsRouter = createTRPCRouter({
         return prisma.credential.delete({
             where:{
                 id: input.id,
-                userId: ctx.auth.user.id
+                userId: ctx.auth.userId
             }
         })
         
@@ -51,7 +51,7 @@ export const credentialsRouter = createTRPCRouter({
 
         return prisma.credential.update({
             where:{id, 
-                userId: ctx.auth.user.id
+                userId: ctx.auth.userId
             },
             data:{
                 name,
@@ -67,7 +67,7 @@ export const credentialsRouter = createTRPCRouter({
         return prisma.credential.findUniqueOrThrow({
             where: {
                  id:input.id,
-                userId: ctx.auth.user.id
+                userId: ctx.auth.userId
             },
         });
         
@@ -97,7 +97,7 @@ export const credentialsRouter = createTRPCRouter({
 
             where: {
                  
-                userId: ctx.auth.user.id,
+                userId: ctx.auth.userId,
                 name:{
                     contains:search,
                     mode:"insensitive",
@@ -109,7 +109,7 @@ export const credentialsRouter = createTRPCRouter({
         }),
           prisma.credential.count({
         where:{
-            userId:ctx.auth.user.id,
+            userId:ctx.auth.userId,
             name:{
                 contains:search,
                 mode:"insensitive"
@@ -144,7 +144,7 @@ export const credentialsRouter = createTRPCRouter({
         return prisma.credential.findMany({
             where:{
                 type,
-                userId: ctx.auth.user.id
+                userId: ctx.auth.userId
             },
             orderBy:{
                 updatedAt: "desc"

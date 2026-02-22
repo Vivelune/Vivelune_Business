@@ -16,7 +16,7 @@ export const executionsRouter = createTRPCRouter({
             where: {
                  id:input.id,
                  workflow: {
-                    userId : ctx.auth.user.id
+                    userId : ctx.auth.userId
                  }
             },
             include:{
@@ -54,7 +54,7 @@ export const executionsRouter = createTRPCRouter({
 
             where: {
                  workflow:{
-                userId: ctx.auth.user.id,
+                userId: ctx.auth.userId,
                  }
             },
             orderBy:{
@@ -72,7 +72,7 @@ export const executionsRouter = createTRPCRouter({
           prisma.execution.count({
         where:{
             workflow:{
-            userId:ctx.auth.user.id,
+            userId:ctx.auth.userId,
             }
         }
     })

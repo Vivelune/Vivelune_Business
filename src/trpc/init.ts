@@ -1,68 +1,89 @@
-
-import { auth } from '@/lib/auth';
-import { polarClient } from '@/lib/polar';
+import { auth } from '@clerk/nextjs/server';
 import { initTRPC, TRPCError } from '@trpc/server';
-import { headers } from 'next/headers';
 import { cache } from 'react';
-import superjson from "superjson"
+import superjson from 'superjson';
+import Stripe from 'stripe';
 
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2026-01-28.clover",
+});
 
 export const createTRPCContext = cache(async () => {
-  /**
-   * @see: https://trpc.io/docs/server/context
-   */
-  return { userId: 'user_123' };
+  return {};
 });
 
 const t = initTRPC.create({
-  /**
-   * @see https://trpc.io/docs/server/data-transformers
-   */
   transformer: superjson,
 });
-// Base router and procedure helpers
-export const createTRPCRouter = t.router;
-export const createCallerFactory = t.createCallerFactory;
-export const baseProcedure = t.procedure;
-export const protectedProcedure = baseProcedure.use (async ({ ctx, next }) => {
-  
-  const session = await auth.api.getSession({headers:await headers()});
 
-  if(!session){
+export const createTRPCRouter = t.router;
+export const baseProcedure = t.procedure;
+
+export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
+  const { userId } = await auth();
+
+  if (!userId) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
       message: 'You must be logged in to access this resource.',
-    })
+    });
   }
 
-  
-  return next ({
+  return next({
     ctx: {
       ...ctx,
-      auth:session,
+      auth: { userId },
     },
-  })
-  
+  });
 });
 
 export const premiumProcedure = protectedProcedure.use(
-  async ({
-    ctx, next
-  })=>{
-    const customer = await polarClient.customers.getStateExternal({
-      externalId: ctx.auth.user.id,
-    })
+  async ({ ctx, next }) => {
+    try {
+      console.log('🔍 Checking premium status for user:', ctx.auth.userId);
+      
+      // Search for active subscriptions for this user
+      const subscriptions = await stripe.subscriptions.list({
+        limit: 100,
+        status: 'active',
+      });
 
-    if(!customer.activeSubscriptions || customer.activeSubscriptions.length === 0)
-    {
+      // Filter subscriptions that belong to this user
+      const userSubscription = subscriptions.data.find(
+        sub => sub.metadata?.clerkUserId === ctx.auth.userId
+      );
+
+      if (!userSubscription) {
+        console.log('❌ No active subscription found for user:', ctx.auth.userId);
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Active Subscription Required',
+        });
+      }
+
+      console.log('✅ Active subscription found:', {
+        userId: ctx.auth.userId,
+        subscriptionId: userSubscription.id,
+        status: userSubscription.status,
+      });
+
+      return next({
+        ctx: {
+          ...ctx,
+          subscription: userSubscription,
+        },
+      });
+      
+    } catch (error) {
+      if (error instanceof TRPCError) {
+        throw error;
+      }
+      
+      console.error('❌ Premium check error:', error);
       throw new TRPCError({
-        code:"FORBIDDEN",
-        message:"Active Subrscription Required"
-      })
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to verify subscription status',
+      });
     }
-
-    return next({
-          ctx:{...ctx, customer}
-    })
   }
-)
+);

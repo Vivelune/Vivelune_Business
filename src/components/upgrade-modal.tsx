@@ -10,8 +10,6 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { authClient } from "@/lib/auth-client"
-
 
 interface UpgradeModalProps {
     open:boolean;
@@ -36,7 +34,7 @@ export const UpgradeModal = ({
                     <AlertDialogCancel>
                         Cancel
                     </AlertDialogCancel>
-                    <AlertDialogAction onClick={()=>{authClient.checkout({slug:"Vivelune-Pro"})}}>
+                    <AlertDialogAction >
                             Upgrade Now
                     </AlertDialogAction>
                 </AlertDialogFooter>
