@@ -15,11 +15,13 @@ export type TRPCContext = {
       id: string;
       subscriptionStatus: string | null;
       stripeCustomerId: string | null;
+      stripeSubscriptionId: string | null;
     };
   } | null;
   subscription?: {
     status: string | null;
     customerId: string | null;
+    subscriptionId: string | null;
   };
 };
 
@@ -67,19 +69,51 @@ const isAuthenticated = t.middleware(async ({ ctx, next }) => {
     });
   }
 
-  const user = await prisma.user.findUnique({
+  // Try to find the user in database
+  let user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
       subscriptionStatus: true,
       stripeCustomerId: true,
+      stripeSubscriptionId: true,
     },
   });
 
+  // If user doesn't exist, create them automatically
   if (!user) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "User account not found.",
+    console.log(`📝 Creating new user in database: ${userId}`);
+    
+    // Get user details from Clerk (you might want to fetch more details)
+    // For now, we'll create with basic info
+    user = await prisma.user.create({
+      data: {
+        id: userId,
+        email: `${userId}@user.com`, // This will be updated by Clerk webhook later
+        name: "User",
+        emailVerified: true,
+        subscriptionStatus: "inactive",
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+      },
+      select: {
+        id: true,
+        subscriptionStatus: true,
+        stripeCustomerId: true,
+        stripeSubscriptionId: true,
+      },
+    });
+    
+    console.log(`✅ User created successfully:`, {
+      id: user.id,
+      subscriptionStatus: user.subscriptionStatus,
+    });
+  } else {
+    console.log(`👤 User found in database:`, {
+      id: user.id,
+      subscriptionStatus: user.subscriptionStatus,
+      hasStripeCustomer: !!user.stripeCustomerId,
+      hasStripeSubscription: !!user.stripeSubscriptionId,
     });
   }
 
@@ -99,7 +133,10 @@ const isAuthenticated = t.middleware(async ({ ctx, next }) => {
 /* --------------------------- */
 
 const hasActiveSubscription = t.middleware(async ({ ctx, next }) => {
+  console.log('🔍 Checking subscription status...');
+  
   if (!ctx.auth) {
+    console.log('❌ No auth context found');
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Authentication required.",
@@ -107,21 +144,31 @@ const hasActiveSubscription = t.middleware(async ({ ctx, next }) => {
   }
 
   const { user } = ctx.auth;
+  console.log('👤 User subscription status from DB:', {
+    userId: user.id,
+    subscriptionStatus: user.subscriptionStatus,
+    stripeCustomerId: user.stripeCustomerId,
+    stripeSubscriptionId: user.stripeSubscriptionId,
+  });
+
   const isActive = user.subscriptionStatus === "active";
 
   if (!isActive) {
+    console.log('❌ Subscription not active');
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: "Active subscription required.",
+      message: "Active subscription required. Please upgrade to Pro.",
     });
   }
 
+  console.log('✅ Subscription is active, proceeding...');
   return next({
     ctx: {
       ...ctx,
       subscription: {
         status: user.subscriptionStatus,
         customerId: user.stripeCustomerId,
+        subscriptionId: user.stripeSubscriptionId,
       },
     },
   });

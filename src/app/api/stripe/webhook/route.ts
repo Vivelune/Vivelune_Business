@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     }
 
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-    
+    console.log(process.env.STRIPE_WEBHOOK_SECRET, "STRIPE_WEBHOOK_SECRET")
     if (!webhookSecret) {
       console.error('❌ STRIPE_WEBHOOK_SECRET not set');
       return new Response('Webhook secret not configured', { status: 500 });
