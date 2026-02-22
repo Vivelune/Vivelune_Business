@@ -1,89 +1,137 @@
-import { auth } from '@clerk/nextjs/server';
-import { initTRPC, TRPCError } from '@trpc/server';
-import { cache } from 'react';
-import superjson from 'superjson';
-import Stripe from 'stripe';
+import { auth } from "@clerk/nextjs/server";
+import { initTRPC, TRPCError } from "@trpc/server";
+import { cache } from "react";
+import superjson from "superjson";
+import prisma from "@/lib/prisma";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-01-28.clover",
+/* --------------------------- */
+/*       Context Type          */
+/* --------------------------- */
+
+export type TRPCContext = {
+  auth: {
+    userId: string;
+    user: {
+      id: string;
+      subscriptionStatus: string | null;
+      stripeCustomerId: string | null;
+    };
+  } | null;
+  subscription?: {
+    status: string | null;
+    customerId: string | null;
+  };
+};
+
+/* --------------------------- */
+/*   Create Base Context       */
+/* --------------------------- */
+
+export const createTRPCContext = cache(async (): Promise<TRPCContext> => {
+  return {
+    auth: null, // default
+  };
 });
 
-export const createTRPCContext = cache(async () => {
-  return {};
-});
+/* --------------------------- */
+/*        Init TRPC            */
+/* --------------------------- */
 
-const t = initTRPC.create({
+const t = initTRPC.context<TRPCContext>().create({
   transformer: superjson,
+  errorFormatter({ shape, error }) {
+    return {
+      ...shape,
+      data: {
+        ...shape.data,
+        zodError: error.cause instanceof Error ? error.cause : null,
+      },
+    };
+  },
 });
 
 export const createTRPCRouter = t.router;
 export const baseProcedure = t.procedure;
 
-export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
-  const { userId } = await auth();
+/* --------------------------- */
+/*   Authentication Middleware */
+/* --------------------------- */
+
+const isAuthenticated = t.middleware(async ({ ctx, next }) => {
+  const { userId } = await auth(); // Clerk auth
 
   if (!userId) {
     throw new TRPCError({
-      code: 'UNAUTHORIZED',
-      message: 'You must be logged in to access this resource.',
+      code: "UNAUTHORIZED",
+      message: "You must be logged in to access this resource.",
+    });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      subscriptionStatus: true,
+      stripeCustomerId: true,
+    },
+  });
+
+  if (!user) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "User account not found.",
     });
   }
 
   return next({
     ctx: {
       ...ctx,
-      auth: { userId },
+      auth: {
+        userId,
+        user,
+      },
     },
   });
 });
 
-export const premiumProcedure = protectedProcedure.use(
-  async ({ ctx, next }) => {
-    try {
-      console.log('🔍 Checking premium status for user:', ctx.auth.userId);
-      
-      // Search for active subscriptions for this user
-      const subscriptions = await stripe.subscriptions.list({
-        limit: 100,
-        status: 'active',
-      });
+/* --------------------------- */
+/*   Subscription Middleware   */
+/* --------------------------- */
 
-      // Filter subscriptions that belong to this user
-      const userSubscription = subscriptions.data.find(
-        sub => sub.metadata?.clerkUserId === ctx.auth.userId
-      );
-
-      if (!userSubscription) {
-        console.log('❌ No active subscription found for user:', ctx.auth.userId);
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'Active Subscription Required',
-        });
-      }
-
-      console.log('✅ Active subscription found:', {
-        userId: ctx.auth.userId,
-        subscriptionId: userSubscription.id,
-        status: userSubscription.status,
-      });
-
-      return next({
-        ctx: {
-          ...ctx,
-          subscription: userSubscription,
-        },
-      });
-      
-    } catch (error) {
-      if (error instanceof TRPCError) {
-        throw error;
-      }
-      
-      console.error('❌ Premium check error:', error);
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to verify subscription status',
-      });
-    }
+const hasActiveSubscription = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.auth) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Authentication required.",
+    });
   }
-);
+
+  const { user } = ctx.auth;
+  const isActive = user.subscriptionStatus === "active";
+
+  if (!isActive) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Active subscription required.",
+    });
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      subscription: {
+        status: user.subscriptionStatus,
+        customerId: user.stripeCustomerId,
+      },
+    },
+  });
+});
+
+/* --------------------------- */
+/*   Exported Procedures       */
+/* --------------------------- */
+
+export const protectedProcedure = t.procedure.use(isAuthenticated);
+export const premiumProcedure = t.procedure
+  .use(isAuthenticated)
+  .use(hasActiveSubscription);
