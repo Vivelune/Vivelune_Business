@@ -60,7 +60,6 @@ export async function POST(req: Request) {
 
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
-        // FIX: Use Stripe.Subscription (removed the extra .Stripe)
         const subscription = event.data.object as Stripe.Subscription;
         const userId = subscription.metadata?.clerkUserId;
 
@@ -95,22 +94,41 @@ export async function POST(req: Request) {
 }
 
 /**
- * Helper with explicit type for Stripe.Subscription
+ * ✅ FIXED Helper with correct property access
  */
 async function updateSubscriptionInDb(
   userId: string, 
   subscription: Stripe.Subscription, 
   requestId: string
 ) {
-  // Stripe timestamps are in seconds; JS Date needs milliseconds.
-  // We use the optional chaining or a null check to ensure we don't pass NaN.
-  const periodEndSeconds = subscription.cancel_at;
-  
+  // Period end lives on the first subscription item in this API version (not on Subscription root)
+  const firstItem = subscription.items?.data?.[0];
+  const periodEndSeconds = firstItem?.current_period_end;
+
   if (!periodEndSeconds) {
-    throw new Error(`Missing current_period_end for subscription ${subscription.id}`);
+    console.error(`❌ Missing current_period_end for subscription ${subscription.id}`);
+    // Still update without the date rather than failing completely
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        stripeCustomerId: subscription.customer as string,
+        stripeSubscriptionId: subscription.id,
+        subscriptionStatus: subscription.status,
+        // Skip subscriptionPeriodEnd if missing
+      },
+    });
+    console.log(`⚠️ [${requestId}] User ${userId} updated (without period end). Status: ${subscription.status}`);
+    return updatedUser;
   }
 
+  // ✅ CORRECT: Convert seconds to milliseconds
   const periodEndDate = new Date(periodEndSeconds * 1000);
+  
+  console.log(`📅 [${requestId}] Date conversion:`, {
+    originalSeconds: periodEndSeconds,
+    milliseconds: periodEndSeconds * 1000,
+    date: periodEndDate.toISOString(),
+  });
 
   const updatedUser = await prisma.user.update({
     where: { id: userId },
@@ -122,6 +140,13 @@ async function updateSubscriptionInDb(
     },
   });
 
-  console.log(`✅ [${requestId}] User ${userId} updated. Status: ${subscription.status}`);
+  console.log(`✅ [${requestId}] User ${userId} updated. Status: ${subscription.status}, Period End: ${periodEndDate.toISOString()}`);
   return updatedUser;
+}
+
+export async function GET() {
+  return NextResponse.json({ 
+    message: 'Stripe webhook endpoint is ready',
+    timestamp: new Date().toISOString()
+  });
 }
