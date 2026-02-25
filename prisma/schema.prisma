@@ -21,6 +21,8 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
+
+  
   workflows     Workflow[]
   credentials   Credential[]
 

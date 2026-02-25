@@ -15,11 +15,13 @@ export type TRPCContext = {
       id: string;
       subscriptionStatus: string | null;
       stripeCustomerId: string | null;
+      stripeSubscriptionId: string | null;
     };
   } | null;
   subscription?: {
     status: string | null;
     customerId: string | null;
+    subscriptionId: string | null;
   };
 };
 
@@ -67,20 +69,51 @@ const isAuthenticated = t.middleware(async ({ ctx, next }) => {
     });
   }
 
-  const user = await prisma.user.findUnique({
+  // Try to find the user in database
+  let user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
       subscriptionStatus: true,
       stripeCustomerId: true,
+      stripeSubscriptionId: true,
     },
   });
-
   if (!user) {
+    console.log(`⏳ User ${userId} not found yet, waiting for webhook...`);
+    
+    // Wait up to 3 seconds for webhook to complete
+    // Webhooks usually take 1-2 seconds, so this is generous
+    const maxAttempts = 6; // 6 * 500ms = 3 seconds
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms
+      
+      user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          subscriptionStatus: true,
+          stripeCustomerId: true,
+          stripeSubscriptionId: true,
+        },
+      });
+
+      if (user) {
+        console.log(`✅ User ${userId} found after ${attempt * 500}ms`);
+        break;
+      }
+      
+      console.log(`⏳ Attempt ${attempt}/${maxAttempts} - user still not found`);
+    }
+  }
+  // If user doesn't exist, create them automatically
+  if (!user) {
+    console.error(`User ${userId} not found in DB - webhook may be misconfigured`);
     throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "User account not found.",
-    });
+      code: "UNAUTHORIZED",
+      message: "User account not fully initialized. Please try again in a moment.",
+    })    
+    
   }
 
   return next({
@@ -99,7 +132,10 @@ const isAuthenticated = t.middleware(async ({ ctx, next }) => {
 /* --------------------------- */
 
 const hasActiveSubscription = t.middleware(async ({ ctx, next }) => {
+  console.log('🔍 Checking subscription status...');
+  
   if (!ctx.auth) {
+    console.log('❌ No auth context found');
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Authentication required.",
@@ -107,21 +143,31 @@ const hasActiveSubscription = t.middleware(async ({ ctx, next }) => {
   }
 
   const { user } = ctx.auth;
+  console.log('👤 User subscription status from DB:', {
+    userId: user.id,
+    subscriptionStatus: user.subscriptionStatus,
+    stripeCustomerId: user.stripeCustomerId,
+    stripeSubscriptionId: user.stripeSubscriptionId,
+  });
+
   const isActive = user.subscriptionStatus === "active";
 
   if (!isActive) {
+    console.log('❌ Subscription not active');
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: "Active subscription required.",
+      message: "Active subscription required. Please upgrade to Pro.",
     });
   }
 
+  console.log('✅ Subscription is active, proceeding...');
   return next({
     ctx: {
       ...ctx,
       subscription: {
         status: user.subscriptionStatus,
         customerId: user.stripeCustomerId,
+        subscriptionId: user.stripeSubscriptionId,
       },
     },
   });

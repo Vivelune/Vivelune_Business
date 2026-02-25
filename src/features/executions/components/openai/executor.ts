@@ -18,6 +18,7 @@ type OpenAiData = {
     systemPrompt?:  string;
     userPrompt?: string;
     credentialId?: string; 
+    model?: string;
 
 }
 
@@ -114,12 +115,15 @@ export const openAiExecutor: NodeExecutor<OpenAiData> = async({
         
     })
 
+     // Choose model (default to gpt-4o-mini)
+  const model = data.model || "gpt-4o-mini";
+
 try {
     const {steps} = await step.ai.wrap(
         "openai-generate-text",
         generateText,
         {
-            model: openai("gpt-4o-mini"),
+            model: openai(model),
             system: systemPrompt,
             prompt: userPrompt,
             experimental_telemetry:{
@@ -150,11 +154,15 @@ try {
     return {
         ...context,
         [data.variableName] :{
-             text,   
+             text,
+             model,
+        usage: steps[0].usage, // Include token usage if available   
         }
     }
 
 } catch (error) {
+    console.error("OpenAI execution error:", error);
+
       await publish(
         openAiChannel().status({
             nodeId,
