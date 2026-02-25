@@ -1,3 +1,4 @@
+// src/app/api/webhooks/clerk/route.ts
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
@@ -5,224 +6,168 @@ import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
-  const startTime = Date.now();
-  console.log('🔥🔥🔥 WEBHOOK ROUTE HIT AT:', new Date().toISOString());
+  const requestId = Math.random().toString(36).substring(7);
+  console.log(`🚀 [${requestId}] Clerk webhook received at:`, new Date().toISOString());
   
   try {
-    // Get the webhook secret from environment variables
-    const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
+    // Log headers
+    const headerPayload = await headers();
+    console.log(`📋 [${requestId}] Headers:`, {
+      'svix-id': headerPayload.get('svix-id'),
+      'svix-timestamp': headerPayload.get('svix-timestamp'),
+      'content-type': headerPayload.get('content-type'),
+    });
 
+    const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
     if (!WEBHOOK_SECRET) {
-      console.error('❌ Missing CLERK_WEBHOOK_SECRET');
+      console.error(`❌ [${requestId}] Missing CLERK_WEBHOOK_SECRET`);
       return new Response('Missing webhook secret', { status: 500 });
     }
 
-    // Get the headers
-    const headerPayload = await headers();
     const svixId = headerPayload.get('svix-id');
     const svixTimestamp = headerPayload.get('svix-timestamp');
     const svixSignature = headerPayload.get('svix-signature');
 
-    // Get the body
     const payload = await req.json();
     const body = JSON.stringify(payload);
-
-    console.log('📦 Webhook payload type:', payload.type);
-
-    // Determine if this is a test event from Clerk dashboard
-    // Test events have no svix headers and simplified data
-    const isTestEvent = !svixId || !svixTimestamp || !svixSignature;
     
+    console.log(`📦 [${requestId}] Raw payload:`, JSON.stringify(payload, null, 2));
+
+    // Verify webhook signature
     let evt: WebhookEvent;
-
-    if (!isTestEvent) {
-      // Real event - verify signature
-      console.log('🔐 Verifying webhook signature...');
-      
-      // Create a new Svix Webhook instance with your secret
-      const wh = new Webhook(WEBHOOK_SECRET);
-
+    
+    if (svixId && svixTimestamp && svixSignature) {
       try {
+        const wh = new Webhook(WEBHOOK_SECRET);
         evt = wh.verify(body, {
-          'svix-id': svixId!,
-          'svix-timestamp': svixTimestamp!,
-          'svix-signature': svixSignature!,
+          'svix-id': svixId,
+          'svix-timestamp': svixTimestamp,
+          'svix-signature': svixSignature,
         }) as WebhookEvent;
-        console.log('✅ Webhook signature verified');
+        console.log(`✅ [${requestId}] Webhook signature verified`);
       } catch (err) {
-        console.error('❌ Error verifying webhook:', err);
-        return new Response('Error occurred', {
-          status: 400,
-        });
+        console.error(`❌ [${requestId}] Signature verification failed:`, err);
+        return new Response('Invalid signature', { status: 401 });
       }
     } else {
-      // Test event from Clerk dashboard - skip verification
-      evt = payload as WebhookEvent;
-      console.log('🧪 Processing test event from Clerk dashboard');
-    }
-
-    // Get the event type
-    const eventType = evt.type;
-    console.log(`📨 Processing event type: ${eventType}`);
-
-    // Handle user creation
-    if (eventType === 'user.created') {
-      const { 
-        id, 
-        email_addresses, 
-        first_name, 
-        last_name, 
-        image_url 
-      } = evt.data as any;
-
-      if (!id) {
-        console.error('❌ No user ID found in webhook');
-        return new Response('No user ID found', { status: 400 });
-      }
-
-      // Handle email based on event type
-      let primaryEmail: string;
-
-      if (email_addresses && Array.isArray(email_addresses) && email_addresses.length > 0) {
-        // Real event with email addresses
-        primaryEmail = email_addresses[0]?.email_address;
-        console.log('📧 Real user email:', primaryEmail);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⚠️ [${requestId}] Development mode - accepting without signature`);
+        evt = payload as WebhookEvent;
       } else {
-        // Test event - create a test email
-        primaryEmail = `test-${id}@clerk-test.com`;
-        console.log('🧪 Using test email for test event:', primaryEmail);
-      }
-
-      if (!primaryEmail) {
-        console.error('❌ No email found in webhook');
-        return new Response('No email found', { status: 400 });
-      }
-
-      // Generate a name from first/last name or use email
-      const name = [first_name, last_name].filter(Boolean).join(' ').trim() || 
-                  primaryEmail.split('@')[0] || 
-                  'User';
-
-      console.log(`👤 Attempting to create/update user:`, { id, email: primaryEmail, name });
-
-      try {
-        // Create or update user in database
-        const user = await prisma.user.upsert({
-          where: { id },
-          update: {
-            email: primaryEmail,
-            name,
-            image: image_url,
-            emailVerified: true,
-          },
-          create: {
-            id,
-            email: primaryEmail,
-            name,
-            image: image_url,
-            emailVerified: true,
-            subscriptionStatus: 'inactive', // Default for new users
-          },
-        });
-
-        console.log(`✅ User successfully ${isTestEvent ? 'created for test' : 'created in production'}:`, {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          subscriptionStatus: user.subscriptionStatus,
-        });
-
-      } catch (error) {
-        console.error('❌ Error creating user in database:', error);
-        return new Response('Error creating user', { 
-          status: 500 
-        });
+        console.error(`❌ [${requestId}] Missing webhook headers`);
+        return new Response('Missing headers', { status: 401 });
       }
     }
 
-    // Handle user updates
-    if (eventType === 'user.updated') {
-      const { 
-        id, 
-        email_addresses, 
-        first_name, 
-        last_name, 
-        image_url 
-      } = evt.data as any;
+    const { type, data } = evt;
+    console.log(`📨 [${requestId}] Processing event:`, { type, data: JSON.stringify(data).substring(0, 200) });
+
+    // Handle user events
+    if (type.startsWith('user.')) {
+      const userData = data as any;
+      const { id } = userData;
 
       if (!id) {
-        return new Response('No user ID found', { status: 400 });
+        console.error(`❌ [${requestId}] No user ID in webhook`);
+        return NextResponse.json({ success: true });
       }
 
-      const primaryEmail = email_addresses?.[0]?.email_address;
+      console.log(`👤 [${requestId}] Processing user:`, { id, type });
 
-      if (!primaryEmail) {
-        return new Response('No email found', { status: 400 });
+      if (type === 'user.deleted') {
+        try {
+          await prisma.user.delete({ where: { id } });
+          console.log(`✅ [${requestId}] User deleted: ${id}`);
+        } catch (error) {
+          console.error(`❌ [${requestId}] Failed to delete user:`, error);
+        }
+        return NextResponse.json({ success: true });
       }
 
-      const name = [first_name, last_name].filter(Boolean).join(' ').trim() || primaryEmail;
+      if (type === 'user.created' || type === 'user.updated') {
+        // Get email
+        const email = userData.email_addresses?.[0]?.email_address;
+        if (!email) {
+          console.error(`❌ [${requestId}] No email for user ${id}`);
+          return NextResponse.json({ success: true });
+        }
 
-      try {
-        const user = await prisma.user.update({
-          where: { id },
-          data: {
-            email: primaryEmail,
-            name,
-            image: image_url,
-          },
+        // Generate name
+        const firstName = userData.first_name || '';
+        const lastName = userData.last_name || '';
+        const name = [firstName, lastName].filter(Boolean).join(' ').trim() || 
+                    email.split('@')[0] || 
+                    'User';
+
+        console.log(`📝 [${requestId}] Attempting to upsert user:`, {
+          id,
+          email,
+          name,
+          image: userData.image_url,
         });
 
-        console.log(`✅ User updated in database: ${id}`, {
-          email: user.email,
-          name: user.name,
-        });
-      } catch (error) {
-        console.error('❌ Error updating user in database:', error);
-        // Don't return error for updates - user might not exist yet
+        try {
+          // Test database connection first
+          await prisma.$queryRaw`SELECT 1`;
+          console.log(`✅ [${requestId}] Database connection OK`);
+
+          const user = await prisma.user.upsert({
+            where: { id },
+            update: {
+              email,
+              name,
+              image: userData.image_url,
+              emailVerified: true,
+            },
+            create: {
+              id,
+              email,
+              name,
+              image: userData.image_url,
+              emailVerified: true,
+              subscriptionStatus: 'inactive',
+            },
+          });
+
+          console.log(`✅ [${requestId}] User upsert successful:`, {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          });
+
+          // Verify user was actually created
+          const verifyUser = await prisma.user.findUnique({
+            where: { id },
+            select: { id: true, email: true }
+          });
+          
+          console.log(`🔍 [${requestId}] Verification query:`, verifyUser);
+
+        } catch (dbError) {
+          console.error(`❌ [${requestId}] Database error:`, {
+            error: dbError,
+            message: dbError instanceof Error ? dbError.message : 'Unknown error',
+            stack: dbError instanceof Error ? dbError.stack : undefined,
+          });
+        }
       }
     }
 
-    // Handle user deletion
-    if (eventType === 'user.deleted') {
-      const { id } = evt.data as any;
-      
-      if (!id) {
-        return new Response('No user ID found', { status: 400 });
-      }
-
-      try {
-        await prisma.user.delete({
-          where: { id },
-        });
-
-        console.log(`✅ User deleted from database: ${id}`);
-      } catch (error) {
-        console.error('❌ Error deleting user from database:', error);
-        // Don't return error for deletion - user might not exist
-      }
-    }
-
-    const duration = Date.now() - startTime;
-    console.log(`✅ Webhook processed successfully in ${duration}ms`);
-
-    return NextResponse.json({ 
-      success: true, 
-      message: `Processed ${eventType} event`,
-      isTestEvent,
-    });
+    console.log(`✅ [${requestId}] Webhook processing complete`);
+    return NextResponse.json({ success: true });
     
   } catch (error) {
-    console.error('❌ Unexpected error in webhook handler:', error);
-    return new Response('Internal server error', { status: 500 });
+    console.error(`❌ [${requestId}] Unhandled webhook error:`, error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
-// Add GET handler for testing endpoint availability
 export async function GET() {
   return NextResponse.json({ 
-    message: 'Clerk webhook endpoint is ready',
-    status: 'active',
+    message: 'Clerk webhook endpoint ready',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
   });
 }

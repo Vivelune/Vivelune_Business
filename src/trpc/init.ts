@@ -79,42 +79,41 @@ const isAuthenticated = t.middleware(async ({ ctx, next }) => {
       stripeSubscriptionId: true,
     },
   });
+  if (!user) {
+    console.log(`⏳ User ${userId} not found yet, waiting for webhook...`);
+    
+    // Wait up to 3 seconds for webhook to complete
+    // Webhooks usually take 1-2 seconds, so this is generous
+    const maxAttempts = 6; // 6 * 500ms = 3 seconds
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms
+      
+      user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          subscriptionStatus: true,
+          stripeCustomerId: true,
+          stripeSubscriptionId: true,
+        },
+      });
 
+      if (user) {
+        console.log(`✅ User ${userId} found after ${attempt * 500}ms`);
+        break;
+      }
+      
+      console.log(`⏳ Attempt ${attempt}/${maxAttempts} - user still not found`);
+    }
+  }
   // If user doesn't exist, create them automatically
   if (!user) {
-    console.log(`📝 Creating new user in database: ${userId}`);
+    console.error(`User ${userId} not found in DB - webhook may be misconfigured`);
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "User account not fully initialized. Please try again in a moment.",
+    })    
     
-    // Get user details from Clerk (you might want to fetch more details)
-    // For now, we'll create with basic info
-    user = await prisma.user.create({
-      data: {
-        id: userId,
-        email: `${userId}@user.com`, // This will be updated by Clerk webhook later
-        name: "User",
-        emailVerified: true,
-        subscriptionStatus: "inactive",
-        stripeCustomerId: null,
-        stripeSubscriptionId: null,
-      },
-      select: {
-        id: true,
-        subscriptionStatus: true,
-        stripeCustomerId: true,
-        stripeSubscriptionId: true,
-      },
-    });
-    
-    console.log(`✅ User created successfully:`, {
-      id: user.id,
-      subscriptionStatus: user.subscriptionStatus,
-    });
-  } else {
-    console.log(`👤 User found in database:`, {
-      id: user.id,
-      subscriptionStatus: user.subscriptionStatus,
-      hasStripeCustomer: !!user.stripeCustomerId,
-      hasStripeSubscription: !!user.stripeSubscriptionId,
-    });
   }
 
   return next({

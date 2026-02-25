@@ -44,6 +44,11 @@ const menuItems = [
                 url:"/executions",
                 
             },
+            {
+                title: "Billing",
+                icons: CreditCardIcon,
+                url:"/billing",
+            },
             
         ]
     }
@@ -161,12 +166,7 @@ export const AppSidebar = () => {
                 
                 
 
-                    <SidebarMenuItem>
-                        <SidebarMenuButton tooltip="Billing Portal" className="gap-x-4" onClick={()=>{window.location.href="/api/billing-portal"}}>
-                            <CreditCardIcon className="h-4 w-4"/>
-                            <span>Billing Portal</span>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
+                    
 
                     <SidebarMenuItem>
                         <SidebarMenuButton tooltip="Sign Out" className="gap-x-4" onClick={handleSignOut}>
