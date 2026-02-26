@@ -127,19 +127,19 @@ export function BillingPage() {
             <div className="max-w-md mx-auto space-y-6">
               <ul className="space-y-3">
                 <li className="flex items-center gap-3 text-sm">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                   <span>Create unlimited workflows</span>
                 </li>
                 <li className="flex items-center gap-3 text-sm">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                   <span>Access to all AI models (OpenAI, Anthropic, Gemini)</span>
                 </li>
                 <li className="flex items-center gap-3 text-sm">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                   <span>Premium support & priority processing</span>
                 </li>
                 <li className="flex items-center gap-3 text-sm">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                   <span>Advanced analytics and execution history</span>
                 </li>
               </ul>
