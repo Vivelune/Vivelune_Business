@@ -3,7 +3,7 @@
 
 import { NodeType } from "@/generated/prisma/enums";
 import  {createId} from "@paralleldrive/cuid2";
-import { GlobeIcon, MousePointerIcon } from "lucide-react";
+import { GlobeIcon, MailIcon, MousePointerIcon } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { Separator } from "./ui/separator";
 import { useReactFlow } from "@xyflow/react";
@@ -81,7 +81,13 @@ const executionNodes: NodeTypeOption[] = [
         label: "Slack",
         description: "Send a message to Slack",
         icon:"/slack.svg",
-    }
+    },
+    {
+        type: NodeType.EMAIL,
+        label: "Send Email",
+        description: "Send an email to recipients",
+        icon: MailIcon,
+      },
 
 ];
 

@@ -59,8 +59,9 @@ export const baseProcedure = t.procedure;
 /*   Authentication Middleware */
 /* --------------------------- */
 
+
 const isAuthenticated = t.middleware(async ({ ctx, next }) => {
-  const { userId } = await auth(); // Clerk auth
+  const { userId } = await auth();
 
   if (!userId) {
     throw new TRPCError({
@@ -79,14 +80,17 @@ const isAuthenticated = t.middleware(async ({ ctx, next }) => {
       stripeSubscriptionId: true,
     },
   });
+
+  // Define max attempts outside the if block so it's available in the error message
+  const maxAttempts = 6;
+
+  // If user doesn't exist, wait for webhook to complete
   if (!user) {
     console.log(`⏳ User ${userId} not found yet, waiting for webhook...`);
     
-    // Wait up to 3 seconds for webhook to complete
-    // Webhooks usually take 1-2 seconds, so this is generous
-    const maxAttempts = 6; // 6 * 500ms = 3 seconds
+    // Wait up to 3 seconds for webhook to complete (6 attempts * 500ms)
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       user = await prisma.user.findUnique({
         where: { id: userId },
@@ -106,14 +110,16 @@ const isAuthenticated = t.middleware(async ({ ctx, next }) => {
       console.log(`⏳ Attempt ${attempt}/${maxAttempts} - user still not found`);
     }
   }
-  // If user doesn't exist, create them automatically
+
+  // If still no user after waiting all attempts
   if (!user) {
-    console.error(`User ${userId} not found in DB - webhook may be misconfigured`);
+    console.error(`❌ User ${userId} not found in DB after ${maxAttempts} attempts`);
+    
+    // Create a response that will trigger redirect on client
     throw new TRPCError({
       code: "UNAUTHORIZED",
-      message: "User account not fully initialized. Please try again in a moment.",
-    })    
-    
+      message: "ACCOUNT_NOT_INITIALIZED", // Special message client can detect
+    });
   }
 
   return next({
@@ -126,6 +132,7 @@ const isAuthenticated = t.middleware(async ({ ctx, next }) => {
     },
   });
 });
+
 
 /* --------------------------- */
 /*   Subscription Middleware   */

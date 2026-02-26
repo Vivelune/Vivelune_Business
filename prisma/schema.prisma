@@ -80,6 +80,8 @@ enum NodeType{
   DEEPSEEK
   DISCORD
   SLACK
+  EMAIL // Add this
+
 }
 
 
@@ -112,6 +114,7 @@ enum CredentialType {
   ANTHROPIC
   GEMINI
   DEEPSEEK
+  RESEND // Add this
 }
 
 

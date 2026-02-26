@@ -12,7 +12,7 @@ export async function fetchHttpRequestRealtimeToken():
 Promise<HttpRequestToken>{
     const token = await getSubscriptionToken(inngest, {
         channel: httpRequestChannel(),
-        topics: ["status"]
+        topics: ["status"] as ["status"], // Type assertion to tuple
     });
     return token;
 }

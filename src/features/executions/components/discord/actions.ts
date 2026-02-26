@@ -12,7 +12,9 @@ export async function fetchDiscordRealtimeToken():
 Promise<DiscordToken>{
     const token = await getSubscriptionToken(inngest, {
         channel: discordChannel(),
-        topics: ["status"]
+       
+        topics: ["status"] as ["status"], // Type assertion to tuple
+
     });
     return token;
 }

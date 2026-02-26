@@ -12,7 +12,7 @@ export async function fetchSlackRealtimeToken():
 Promise<SlackToken>{
     const token = await getSubscriptionToken(inngest, {
         channel: slackChannel(),
-        topics: ["status"]
+        topics: ["status"] as ["status"], // Type assertion to tuple
     });
     return token;
 }

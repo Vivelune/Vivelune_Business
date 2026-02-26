@@ -12,7 +12,7 @@ export async function fetchOpenAiRealtimeToken():
 Promise<OpenAiToken>{
     const token = await getSubscriptionToken(inngest, {
         channel: openAiChannel(),
-        topics: ["status"]
+        topics: ["status"] as ["status"], // Type assertion to tuple
     });
     return token;
 }

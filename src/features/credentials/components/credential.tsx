@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InfoIcon } from "lucide-react";
 
 const formSchema = z.object({
     name:z.string().min(1, "Name is required"),
@@ -44,7 +46,12 @@ const credentialTypeOptions = [{
     value : CredentialType.DEEPSEEK,
     label: "DeepSeek",
     logo: "/deepseek.svg"
-}
+},
+{
+    value: CredentialType.RESEND,
+    label: "Resend",
+    logo: "/resend.svg" // You'll need to add this SVG
+  }
 ]
 
 
@@ -208,6 +215,21 @@ export const CredentialForm = ({
                             </Button>
 
                         </div>
+                        {form.watch("type") === CredentialType.RESEND && (
+  <Alert className="mt-4">
+    <InfoIcon className="h-4 w-4" />
+    <AlertDescription>
+      <p className="font-medium mb-2">How to get your Resend API key:</p>
+      <ol className="list-decimal ml-4 text-sm space-y-1">
+        <li>Go to <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="underline">resend.com</a> and sign up</li>
+        <li>Verify your domain (e.g., roastandrecover.com)</li>
+        <li>Navigate to API Keys section</li>
+        <li>Create a new API key</li>
+        <li>Copy the key and paste it here</li>
+      </ol>
+    </AlertDescription>
+  </Alert>
+)}
                     </form>
                 </Form>
             </CardContent>
