@@ -1,3 +1,4 @@
+// src/app/api/stripe/subscription/route.ts
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
@@ -19,11 +20,10 @@ export async function GET() {
 
     console.log('✅ User authenticated:', userId);
 
-    // 2. Search for active subscriptions for this user
-    // We can search by metadata.clerkUserId
+    // 2. Search for ANY subscriptions (not just active) for this user
     const subscriptions = await stripe.subscriptions.list({
       limit: 100,
-      status: 'active',
+      status: 'all', // Get all statuses, not just active
       expand: ['data.customer', 'data.items.data.price'],
     });
 
@@ -33,26 +33,34 @@ export async function GET() {
     );
 
     if (userSubscription) {
-      console.log('✅ Active subscription found:', {
+      console.log('✅ Subscription found:', {
         id: userSubscription.id,
         status: userSubscription.status,
         priceId: userSubscription.items.data[0]?.price.id,
       });
-    } else {
-      console.log('ℹ️ No active subscription found for user');
-    }
 
-    // 4. Return subscription info
-    return NextResponse.json({ 
-      subscription: userSubscription ? {
-        id: userSubscription.id,
-        status: userSubscription.status,
-        currentPeriodEnd: new Date(),
-        cancelAtPeriodEnd: userSubscription.cancel_at_period_end,
-        priceId: userSubscription.items.data[0]?.price.id,
-        productId: userSubscription.items.data[0]?.price.product,
-      } : null
-    });
+      // Get the current period end from the subscription items (correct for this API version)
+      const firstItem = userSubscription.items?.data?.[0];
+      const currentPeriodEnd = firstItem?.current_period_end 
+        ? new Date(firstItem.current_period_end * 1000) 
+        : new Date();
+
+      // 4. Return subscription info
+      return NextResponse.json({ 
+        subscription: {
+          id: userSubscription.id,
+          status: userSubscription.status,
+          currentPeriodEnd,
+          cancelAtPeriodEnd: userSubscription.cancel_at_period_end,
+          priceId: userSubscription.items.data[0]?.price.id,
+          productId: userSubscription.items.data[0]?.price.product,
+        }
+      });
+    } else {
+      console.log('ℹ️ No subscription found for user');
+      // Return 200 with null subscription (not 404)
+      return NextResponse.json({ subscription: null });
+    }
     
   } catch (error) {
     console.error('❌ Subscription API error:', error);

@@ -1,3 +1,4 @@
+// src/features/subscriptions/hooks/use-subscription.ts
 import { useUser } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
 
@@ -21,8 +22,9 @@ export const useSubscription = () => {
       const response = await fetch('/api/stripe/subscription');
       
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to fetch subscription');
+        // If any error, return null subscription (don't throw)
+        console.error('❌ Subscription API error:', await response.text());
+        return { subscription: null };
       }
       
       const data = await response.json();
@@ -31,14 +33,17 @@ export const useSubscription = () => {
       return data;
     },
     enabled: !!user,
-    refetchInterval: 60000, // Refetch every minute to keep status up to date
+    refetchInterval: 60000, // Refetch every minute
+    retry: false, // Don't retry on failure
   });
 };
 
 export const useHasActiveSubscription = () => {
   const { data, isLoading, error, ...rest } = useSubscription();
   
-  const hasActiveSubscription = data?.subscription?.status === 'active';
+  // Consider both 'active' and 'trialing' as active
+  const hasActiveSubscription = data?.subscription?.status === 'active' || 
+                                data?.subscription?.status === 'trialing';
   
   console.log('📊 Subscription status:', {
     hasActiveSubscription,

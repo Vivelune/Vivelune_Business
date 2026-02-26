@@ -46,11 +46,16 @@ export const useSubscription = () => {
     queryFn: async (): Promise<{ subscription: Subscription | null }> => {
       const response = await fetch('/api/billing/subscription');
       if (!response.ok) {
+        // If 404, it means no subscription found - return null, not error
+        if (response.status === 404) {
+          return { subscription: null };
+        }
         const error = await response.json();
         throw new Error(error.error || 'Failed to fetch subscription');
       }
       return response.json();
     },
+    retry: false, // Don't retry on failure
   });
 };
 
@@ -60,11 +65,16 @@ export const useInvoices = () => {
     queryFn: async (): Promise<{ invoices: Invoice[] }> => {
       const response = await fetch('/api/billing/invoices');
       if (!response.ok) {
+        // If 404, return empty invoices
+        if (response.status === 404) {
+          return { invoices: [] };
+        }
         const error = await response.json();
         throw new Error(error.error || 'Failed to fetch invoices');
       }
       return response.json();
     },
+    retry: false,
   });
 };
 
