@@ -155,7 +155,7 @@ export const UpgradeModal = ({
           <div className="space-y-3">
             {features.map((feature, index) => (
               <div key={index} className="flex items-start gap-3">
-                <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                 <span className="text-sm">{feature}</span>
               </div>
             ))}
