@@ -2,6 +2,7 @@ import { InitialNode } from "@/components/initial-node";
 import { AnthropicNode } from "@/features/executions/components/anthropic/node";
 import { DeepseekNode } from "@/features/executions/components/deepseek/node";
 import { DiscordNode } from "@/features/executions/components/discord/node";
+import { EmailNode } from "@/features/executions/components/email/node";
 import { GeminiNode } from "@/features/executions/components/gemini/node";
 import { HttpRequestNode } from "@/features/executions/components/http-request/node";
 import { OpenAiNode } from "@/features/executions/components/openai/node";
@@ -24,6 +25,7 @@ export const nodeComponents = {
     [NodeType.DEEPSEEK]: DeepseekNode,
     [NodeType.DISCORD] : DiscordNode,
     [NodeType.SLACK] : SlackNode,
+    [NodeType.EMAIL]: EmailNode,
 
 
 } as const satisfies NodeTypes ;

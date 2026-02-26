@@ -12,7 +12,7 @@ export async function fetchGeminiRealtimeToken():
 Promise<GeminiToken>{
     const token = await getSubscriptionToken(inngest, {
         channel: geminiChannel(),
-        topics: ["status"]
+        topics: ["status"] as ["status"], // Type assertion to tuple
     });
     return token;
 }

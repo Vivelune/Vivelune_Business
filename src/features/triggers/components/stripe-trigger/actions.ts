@@ -12,7 +12,7 @@ export async function fetchStripeTriggerRealtimeToken():
 Promise<StripeTriggerToken>{
     const token = await getSubscriptionToken(inngest, {
         channel: stripeTriggerChannel(),
-        topics: ["status"]
+        topics: ["status"] as ["status"], // Type assertion to tuple
     });
     return token;
 }

@@ -12,7 +12,7 @@ export async function fetchAnthropicRealtimeToken():
 Promise<AnthropicToken>{
     const token = await getSubscriptionToken(inngest, {
         channel: anthropicChannel(),
-        topics: ["status"]
+        topics: ["status"] as ["status"], // Type assertion to tuple
     });
     return token;
 }

@@ -12,7 +12,7 @@ export async function fetchManualTriggerRealtimeToken():
 Promise<ManualTriggerToken>{
     const token = await getSubscriptionToken(inngest, {
         channel: manualTriggerChannel(),
-        topics: ["status"]
+        topics: ["status"] as ["status"], // Type assertion to tuple
     });
     return token;
 }

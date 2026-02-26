@@ -12,7 +12,7 @@ export async function fetchGoogleFormTriggerRealtimeToken():
 Promise<GoogleFormTriggerToken>{
     const token = await getSubscriptionToken(inngest, {
         channel: googleFormTriggerChannel(),
-        topics: ["status"]
+        topics: ["status"] as ["status"], // Type assertion to tuple
     });
     return token;
 }

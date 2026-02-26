@@ -12,7 +12,7 @@ export async function fetchDeepseekRealtimeToken():
 Promise<DeepseekToken>{
     const token = await getSubscriptionToken(inngest, {
         channel: deepseekChannel(),
-        topics: ["status"]
+        topics: ["status"] as ["status"], // Type assertion to tuple
     });
     return token;
 }

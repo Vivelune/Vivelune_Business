@@ -20,7 +20,8 @@ export const NodeType = {
   OPENAI: 'OPENAI',
   DEEPSEEK: 'DEEPSEEK',
   DISCORD: 'DISCORD',
-  SLACK: 'SLACK'
+  SLACK: 'SLACK',
+  EMAIL: 'EMAIL'
 } as const
 
 export type NodeType = (typeof NodeType)[keyof typeof NodeType]
@@ -30,7 +31,8 @@ export const CredentialType = {
   OPENAI: 'OPENAI',
   ANTHROPIC: 'ANTHROPIC',
   GEMINI: 'GEMINI',
-  DEEPSEEK: 'DEEPSEEK'
+  DEEPSEEK: 'DEEPSEEK',
+  RESEND: 'RESEND'
 } as const
 
 export type CredentialType = (typeof CredentialType)[keyof typeof CredentialType]

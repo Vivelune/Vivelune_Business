@@ -147,6 +147,7 @@ const credentialLogos : Record<CredentialType, string> = {
 [CredentialType.GEMINI] : "/gemini.svg",
 [CredentialType.ANTHROPIC] : "/anthropic.svg",
 [CredentialType.DEEPSEEK] : "/deepseek.svg",
+[CredentialType.RESEND]: "/resend.svg", // Add this
 }
 
 
@@ -155,7 +156,12 @@ export const CredentialItem = ({
  data
 }: {data: Credential })=>{
 
-
+    const getLogoStyle = (type: CredentialType) => {
+        if (type === CredentialType.RESEND) {
+          return { filter: "brightness(0)" }; // Make it black to match your brand
+        }
+        return {};
+      };
     const  removeCredential = useRemoveCredential();
 
     const handleRemove = () =>{
