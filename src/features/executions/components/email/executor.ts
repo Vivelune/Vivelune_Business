@@ -34,6 +34,81 @@ type EmailData = {
   html?: string;
 };
 
+// Define a type for clerkEvent to avoid TypeScript errors
+interface ClerkEventData {
+  userId?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  imageUrl?: string;
+  username?: string;
+  eventType?: string;
+  timestamp?: string;
+  verified?: boolean;
+  raw?: any;
+}
+
+/**
+ * Extract a clean email string from various possible formats
+ */
+function extractEmail(emailField: any): string {
+  if (!emailField) return '';
+  
+  // If it's already a string, clean it
+  if (typeof emailField === 'string') {
+    // Remove quotes and trim
+    const cleaned = emailField.trim().replace(/^["']|["']$/g, '');
+    console.log("📧 extractEmail - Cleaned string:", cleaned);
+    return cleaned;
+  }
+  
+  // If it's an object with common email properties
+  if (typeof emailField === 'object') {
+    console.log("📧 extractEmail - Object keys:", Object.keys(emailField));
+    
+    // Check common email properties
+    if (emailField.email && typeof emailField.email === 'string') {
+      const cleaned = emailField.email.trim().replace(/^["']|["']$/g, '');
+      console.log("📧 extractEmail - Found email property:", cleaned);
+      return cleaned;
+    }
+    if (emailField.email_address && typeof emailField.email_address === 'string') {
+      const cleaned = emailField.email_address.trim().replace(/^["']|["']$/g, '');
+      console.log("📧 extractEmail - Found email_address property:", cleaned);
+      return cleaned;
+    }
+    if (emailField.address && typeof emailField.address === 'string') {
+      const cleaned = emailField.address.trim().replace(/^["']|["']$/g, '');
+      console.log("📧 extractEmail - Found address property:", cleaned);
+      return cleaned;
+    }
+    
+    // Try to stringify and parse
+    try {
+      const str = JSON.stringify(emailField);
+      console.log("📧 extractEmail - Stringified object:", str);
+      
+      // Try to extract email from JSON string
+      const emailMatch = str.match(/["']?email["']?\s*:\s*["']([^"']+)["']/i);
+      if (emailMatch && emailMatch[1]) {
+        console.log("📧 extractEmail - Extracted via regex:", emailMatch[1]);
+        return emailMatch[1].trim();
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }
+  
+  // If it's an array, take the first item and recurse
+  if (Array.isArray(emailField) && emailField.length > 0) {
+    console.log("📧 extractEmail - Array with", emailField.length, "items");
+    return extractEmail(emailField[0]);
+  }
+  
+  console.log("📧 extractEmail - Could not extract email, returning empty string");
+  return '';
+}
+
 /**
  * Safely parse template data that might be:
  * - Valid JSON string
@@ -77,7 +152,19 @@ export const emailExecutor: NodeExecutor<EmailData> = async ({
   publish,
 }) => {
   const startTime = Date.now();
-  console.log(`📧 [Email Node ${nodeId}] Starting execution`);
+  console.log(`📧 [Email Node ${nodeId}] ========== EMAIL EXECUTOR START ==========`);
+  console.log(`📧 [Email Node ${nodeId}] Full context keys:`, Object.keys(context));
+  
+  // Check specifically for clerkEvent with proper type checking
+  const clerkEvent = context.clerkEvent as ClerkEventData | undefined;
+  
+  if (clerkEvent) {
+    console.log(`📧 [Email Node ${nodeId}] ✅ clerkEvent FOUND in context`);
+    console.log(`📧 [Email Node ${nodeId}] clerkEvent.email:`, clerkEvent.email);
+    console.log(`📧 [Email Node ${nodeId}] clerkEvent.email type:`, typeof clerkEvent.email);
+  } else {
+    console.log(`📧 [Email Node ${nodeId}] ❌ clerkEvent NOT found in context`);
+  }
 
   await publish(
     emailChannel().status({
@@ -138,7 +225,30 @@ export const emailExecutor: NodeExecutor<EmailData> = async ({
       ? Handlebars.compile(data.from)(context)
       : "Roast & Recover <studio@roastandrecover.com>";
 
-    const to = Handlebars.compile(data.to)(context);
+    // Handle 'to' field with robust extraction
+    console.log(`📧 [Email Node ${nodeId}] Original 'to' template:`, data.to);
+    
+    // First compile with Handlebars
+    const compiledTo = Handlebars.compile(data.to)(context);
+    console.log(`📧 [Email Node ${nodeId}] Compiled 'to' result:`, compiledTo);
+    console.log(`📧 [Email Node ${nodeId}] Compiled 'to' type:`, typeof compiledTo);
+    
+    // Extract clean email
+    const extractedTo = extractEmail(compiledTo);
+    console.log(`📧 [Email Node ${nodeId}] Extracted clean email:`, extractedTo);
+
+    if (!extractedTo) {
+      console.error(`📧 [Email Node ${nodeId}] Failed to extract valid email from:`, compiledTo);
+      throw new NonRetriableError(`Email node: Could not extract valid email from "${compiledTo}"`);
+    }
+
+    // Validate email format (simple check)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(extractedTo)) {
+      console.error(`📧 [Email Node ${nodeId}] Extracted email fails validation:`, extractedTo);
+      throw new NonRetriableError(`Email node: Invalid email format: "${extractedTo}"`);
+    }
+
     const subject = Handlebars.compile(data.subject)(context);
     
     let html: string;
@@ -164,27 +274,7 @@ export const emailExecutor: NodeExecutor<EmailData> = async ({
       if (!templateData.appUrl) {
         templateData.appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://vivelune.com';
       }
-      console.log(`📧 [Email Node ${nodeId}] ========== EMAIL EXECUTOR START ==========`);
-      console.log(`📧 [Email Node ${nodeId}] Full context keys:`, Object.keys(context));
       
-      // Check specifically for clerkEvent
-      if (context.clerkEvent) {
-        console.log(`📧 [Email Node ${nodeId}] ✅ clerkEvent FOUND in context`);
-        console.log(`📧 [Email Node ${nodeId}] clerkEvent data:`, JSON.stringify(context.clerkEvent, null, 2));
-      } else {
-        console.log(`📧 [Email Node ${nodeId}] ❌ clerkEvent NOT found in context`);
-        // Log all context keys to see what IS available
-        console.log(`📧 [Email Node ${nodeId}] Available context keys:`, Object.keys(context));
-      }
-      
-      console.log(`📧 [Email Node ${nodeId}] Email data received:`, {
-        variableName: data.variableName,
-        to: data.to,
-        subject: data.subject,
-        template: data.template,
-        templateData: data.templateData,
-      });
-    
       // Render the template
       try {
         html = await renderEmailTemplate(template, templateData);
@@ -196,16 +286,17 @@ export const emailExecutor: NodeExecutor<EmailData> = async ({
     }
 
     // Send email
-    console.log(`📧 [Email Node ${nodeId}] Sending email to: ${to}`);
+    console.log(`📧 [Email Node ${nodeId}] Sending email to: ${extractedTo}`);
     const result = await step.run("send-email", async () => {
       const { data: emailResponse, error } = await resend.emails.send({
         from,
-        to: [to],
+        to: [extractedTo], // Use the extracted clean email
         subject,
         html,
       });
 
       if (error) {
+        console.error(`📧 [Email Node ${nodeId}] Resend error:`, error);
         throw new Error(error.message);
       }
 
@@ -217,7 +308,7 @@ export const emailExecutor: NodeExecutor<EmailData> = async ({
         [data.variableName!]: {
           sent: true,
           id: emailResponse?.id,
-          to,
+          to: extractedTo,
           subject,
           template: template !== "custom" ? template : undefined,
           from,
