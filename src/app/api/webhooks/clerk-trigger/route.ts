@@ -13,7 +13,15 @@ export async function POST(req: Request) {
   const variableName = url.searchParams.get('variableName') || 'clerkEvent';
   const secretId = url.searchParams.get('secretId');
 
+  console.log("🔍 Clerk Trigger Webhook received:", {
+    workflowId,
+    variableName,
+    secretId: secretId ? "provided" : "not provided",
+    url: req.url
+  });
+
   if (!workflowId) {
+    console.error("❌ No workflowId provided");
     return NextResponse.json({ error: 'No workflowId provided' }, { status: 400 });
   }
 
@@ -24,8 +32,11 @@ export async function POST(req: Request) {
   });
 
   if (!workflow) {
+    console.error("❌ Workflow not found:", workflowId);
     return NextResponse.json({ error: 'Workflow not found' }, { status: 404 });
   }
+
+  console.log("✅ Workflow found for user:", workflow.userId);
 
   // Get headers for verification
   const headerPayload = await headers();
@@ -36,6 +47,7 @@ export async function POST(req: Request) {
   // If a secretId is provided, verify the webhook
   if (secretId) {
     if (!svixId || !svixTimestamp || !svixSignature) {
+      console.error("❌ Missing svix headers");
       return new Response('Missing svix headers', { status: 400 });
     }
 
@@ -43,8 +55,11 @@ export async function POST(req: Request) {
     const savedSecret = await getWebhookSecret(workflowId, workflow.userId, secretId);
 
     if (!savedSecret) {
+      console.error("❌ Webhook secret not found for ID:", secretId);
       return new Response('Webhook secret not found', { status: 401 });
     }
+
+    console.log("✅ Webhook secret found, verifying signature...");
 
     // Verify the webhook
     const wh = new Webhook(savedSecret);
@@ -67,12 +82,27 @@ export async function POST(req: Request) {
     const evt = payload;
     const eventType = evt.type;
 
+    console.log("📦 Received event type:", eventType);
+    console.log("📦 Full payload keys:", Object.keys(evt));
+
     // Format the data based on event type
     let triggerData: any = {};
 
     if (eventType.startsWith('user.')) {
       const userData = evt.data;
-      const email = userData.email_addresses?.[0]?.email_address || null;
+      
+      console.log("👤 User data keys:", Object.keys(userData));
+      console.log("👤 User ID:", userData.id);
+      console.log("👤 Email addresses:", userData.email_addresses);
+      
+      // Extract email from email_addresses array
+      let email = null;
+      if (userData.email_addresses && Array.isArray(userData.email_addresses) && userData.email_addresses.length > 0) {
+        email = userData.email_addresses[0].email_address;
+        console.log("✅ Email found:", email);
+      } else {
+        console.log("⚠️ No email found in email_addresses");
+      }
       
       triggerData = {
         userId: userData.id,
@@ -83,13 +113,42 @@ export async function POST(req: Request) {
         username: userData.username || null,
         eventType,
         timestamp: new Date().toISOString(),
-        verified: true, // Mark as verified
+        verified: true,
         raw: userData,
+      };
+
+      console.log("📧 Final trigger data:", {
+        userId: triggerData.userId,
+        email: triggerData.email,
+        firstName: triggerData.firstName,
+        lastName: triggerData.lastName,
+        eventType: triggerData.eventType,
+      });
+    } else if (eventType.startsWith('session.')) {
+      const sessionData = evt.data;
+      triggerData = {
+        userId: sessionData.user_id,
+        sessionId: sessionData.id,
+        eventType,
+        timestamp: new Date().toISOString(),
+        verified: true,
+        raw: sessionData,
+      };
+      console.log("🔐 Session event for user:", triggerData.userId);
+    } else {
+      console.log("⚠️ Unhandled event type:", eventType);
+      triggerData = {
+        eventType,
+        timestamp: new Date().toISOString(),
+        verified: true,
+        raw: evt.data,
       };
     }
 
     // Trigger the workflow
-    await inngest.send({
+    console.log(`🚀 Triggering workflow ${workflowId} with variable "${variableName}"`);
+    
+    const inngestPayload = {
       name: "workflows/execute.workflow",
       data: {
         workflowId,
@@ -98,7 +157,11 @@ export async function POST(req: Request) {
         },
       },
       id: `clerk-trigger-${Date.now()}`,
-    });
+    };
+    
+    console.log("📦 Inngest payload:", JSON.stringify(inngestPayload, null, 2));
+    
+    await inngest.send(inngestPayload);
 
     return NextResponse.json({ success: true, verified: true });
   } else {
@@ -107,6 +170,8 @@ export async function POST(req: Request) {
     
     const payload = await req.json();
     const eventType = payload.type;
+
+    console.log("📦 Unverified event type:", eventType);
 
     let triggerData: any = {
       eventType,
@@ -117,15 +182,23 @@ export async function POST(req: Request) {
 
     if (eventType.startsWith('user.')) {
       const userData = payload.data;
+      
+      let email = null;
+      if (userData.email_addresses && Array.isArray(userData.email_addresses) && userData.email_addresses.length > 0) {
+        email = userData.email_addresses[0].email_address;
+      }
+      
       triggerData = {
         ...triggerData,
         userId: userData.id,
-        email: userData.email_addresses?.[0]?.email_address || null,
+        email: email,
         firstName: userData.first_name || null,
         lastName: userData.last_name || null,
         imageUrl: userData.image_url || null,
         username: userData.username || null,
       };
+      
+      console.log("📧 Unverified - Email:", email);
     }
 
     await inngest.send({
