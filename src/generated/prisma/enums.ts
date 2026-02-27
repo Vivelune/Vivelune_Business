@@ -21,7 +21,8 @@ export const NodeType = {
   DEEPSEEK: 'DEEPSEEK',
   DISCORD: 'DISCORD',
   SLACK: 'SLACK',
-  EMAIL: 'EMAIL'
+  EMAIL: 'EMAIL',
+  CLERK_TRIGGER: 'CLERK_TRIGGER'
 } as const
 
 export type NodeType = (typeof NodeType)[keyof typeof NodeType]
@@ -32,7 +33,8 @@ export const CredentialType = {
   ANTHROPIC: 'ANTHROPIC',
   GEMINI: 'GEMINI',
   DEEPSEEK: 'DEEPSEEK',
-  RESEND: 'RESEND'
+  RESEND: 'RESEND',
+  WEBHOOK_SECRET: 'WEBHOOK_SECRET'
 } as const
 
 export type CredentialType = (typeof CredentialType)[keyof typeof CredentialType]

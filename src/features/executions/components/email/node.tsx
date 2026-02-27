@@ -1,4 +1,3 @@
-// src/features/executions/components/email/node.tsx
 "use client";
 
 import { Node, NodeProps, useReactFlow } from "@xyflow/react";
@@ -20,6 +19,11 @@ type EmailNodeData = {
 
 type EmailNodeType = Node<EmailNodeData>;
 
+/**
+ * EmailNode
+ * Integrated with the Vivelune Studio aesthetic: 
+ * Sharp edges, technical tracking, and monochrome iconography.
+ */
 export const EmailNode = memo((props: NodeProps<EmailNodeType>) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { setNodes } = useReactFlow();
@@ -51,9 +55,11 @@ export const EmailNode = memo((props: NodeProps<EmailNodeType>) => {
   const handleOpenSettings = () => setDialogOpen(true);
 
   const nodeData = props.data;
+  
+  // Re-designed description to feel like a technical protocol status
   const description = nodeData?.subject
-    ? `📧 ${nodeData.subject.slice(0, 50)}...`
-    : "Not Configured";
+    ? `SIG: ${nodeData.subject.slice(0, 30).toUpperCase()}...`
+    : "PROTOCOL UNCONFIGURED";
 
   return (
     <>
@@ -67,7 +73,8 @@ export const EmailNode = memo((props: NodeProps<EmailNodeType>) => {
         {...props}
         id={props.id}
         icon={MailIcon}
-        name="Email"
+        // "DISPATCH" feels more studio-authentic than "Email"
+        name="DISPATCH" 
         status={nodeStatus}
         description={description}
         onSettings={handleOpenSettings}

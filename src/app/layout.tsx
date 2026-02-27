@@ -7,6 +7,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { Provider } from "jotai";
 import { ClerkProvider } from "@/providers/clerk-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { HydrationProvider } from "@/providers/hydration-provider";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -48,7 +49,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning >
+    <html lang="en"  >
       <body
         className={` ${geistMono.variable} antialiased `}
       >
@@ -57,8 +58,10 @@ export default function RootLayout({
         <TRPCReactProvider>
           <NuqsAdapter>
             <Provider>
+            <HydrationProvider>
         {children}
         <Toaster/>
+        </HydrationProvider>
         </Provider>
         </NuqsAdapter> 
         

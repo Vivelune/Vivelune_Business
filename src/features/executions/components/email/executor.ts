@@ -164,7 +164,27 @@ export const emailExecutor: NodeExecutor<EmailData> = async ({
       if (!templateData.appUrl) {
         templateData.appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://vivelune.com';
       }
+      console.log(`📧 [Email Node ${nodeId}] ========== EMAIL EXECUTOR START ==========`);
+      console.log(`📧 [Email Node ${nodeId}] Full context keys:`, Object.keys(context));
       
+      // Check specifically for clerkEvent
+      if (context.clerkEvent) {
+        console.log(`📧 [Email Node ${nodeId}] ✅ clerkEvent FOUND in context`);
+        console.log(`📧 [Email Node ${nodeId}] clerkEvent data:`, JSON.stringify(context.clerkEvent, null, 2));
+      } else {
+        console.log(`📧 [Email Node ${nodeId}] ❌ clerkEvent NOT found in context`);
+        // Log all context keys to see what IS available
+        console.log(`📧 [Email Node ${nodeId}] Available context keys:`, Object.keys(context));
+      }
+      
+      console.log(`📧 [Email Node ${nodeId}] Email data received:`, {
+        variableName: data.variableName,
+        to: data.to,
+        subject: data.subject,
+        template: data.template,
+        templateData: data.templateData,
+      });
+    
       // Render the template
       try {
         html = await renderEmailTemplate(template, templateData);

@@ -148,6 +148,7 @@ const credentialLogos : Record<CredentialType, string> = {
 [CredentialType.ANTHROPIC] : "/anthropic.svg",
 [CredentialType.DEEPSEEK] : "/deepseek.svg",
 [CredentialType.RESEND]: "/resend.svg", // Add this
+[CredentialType.WEBHOOK_SECRET]:"/webhook.svg"
 }
 
 

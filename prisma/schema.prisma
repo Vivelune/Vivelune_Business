@@ -64,6 +64,8 @@ model Workflow{
   connections Connection[]
   executions Execution[]
 
+webhookSecrets Json? @default("{}")
+
   userId String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   }
@@ -81,7 +83,7 @@ enum NodeType{
   DISCORD
   SLACK
   EMAIL // Add this
-
+  CLERK_TRIGGER
 }
 
 
@@ -115,6 +117,8 @@ enum CredentialType {
   GEMINI
   DEEPSEEK
   RESEND // Add this
+  WEBHOOK_SECRET // Add this for webhook signing secrets
+
 }
 
 

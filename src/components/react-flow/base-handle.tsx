@@ -5,6 +5,11 @@ import { cn } from "@/lib/utils";
 
 export type BaseHandleProps = HandleProps;
 
+/**
+ * BaseHandle
+ * Refactored for the Vivelune "Roast & Recover" aesthetic.
+ * Switched from rounded slate to sharp charcoal technical contact points.
+ */
 export function BaseHandle({
   className,
   children,
@@ -14,7 +19,10 @@ export function BaseHandle({
     <Handle
       {...props}
       className={cn(
-        "dark:border-secondary dark:bg-secondary h-[11px] w-[11px] rounded-full border border-slate-300 bg-slate-100 transition",
+        // Sharp edges, Charcoal background, Bone border
+        "h-3 w-3 rounded-none border border-[#DCD5CB] bg-[#1C1C1C] transition-colors",
+        // Interactive state: highlights on hover or connection attempt
+        "hover:bg-[#4A4A4A] hover:border-[#1C1C1C]",
         className,
       )}
     >
