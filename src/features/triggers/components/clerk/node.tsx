@@ -48,6 +48,7 @@ export const ClerkTriggerNode = memo((props: ClerkTriggerNodeProps) => {
       })
     );
     setDialogOpen(false);
+    
   };
 
   const nodeData = props.data || {};

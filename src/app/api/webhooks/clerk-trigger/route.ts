@@ -95,14 +95,37 @@ export async function POST(req: Request) {
       console.log("👤 User ID:", userData.id);
       console.log("👤 Email addresses:", userData.email_addresses);
       
-      // Extract email from email_addresses array
+      // ===== IMPROVED EMAIL EXTRACTION =====
       let email = null;
+      
+      // Method 1: Direct from email_addresses array
       if (userData.email_addresses && Array.isArray(userData.email_addresses) && userData.email_addresses.length > 0) {
         email = userData.email_addresses[0].email_address;
-        console.log("✅ Email found:", email);
-      } else {
-        console.log("⚠️ No email found in email_addresses");
+        console.log("✅ Method 1 - Email found in email_addresses array:", email);
       }
+      // Method 2: Direct email field
+      else if (userData.email) {
+        email = userData.email;
+        console.log("✅ Method 2 - Email found in direct email field:", email);
+      }
+      // Method 3: From primary_email_address_id
+      else if (userData.primary_email_address_id && userData.email_addresses) {
+        const primaryEmail = userData.email_addresses.find(
+          (e: any) => e.id === userData.primary_email_address_id
+        );
+        if (primaryEmail) {
+          email = primaryEmail.email_address;
+          console.log("✅ Method 3 - Email found via primary_email_address_id:", email);
+        }
+      }
+      // Method 4: From raw data (fallback)
+      else if (userData.raw?.email_addresses?.[0]?.email_address) {
+        email = userData.raw.email_addresses[0].email_address;
+        console.log("✅ Method 4 - Email found in raw data:", email);
+      }
+      
+      console.log("📧 Final extracted email:", email);
+      // ===== END IMPROVED EMAIL EXTRACTION =====
       
       triggerData = {
         userId: userData.id,
@@ -183,10 +206,37 @@ export async function POST(req: Request) {
     if (eventType.startsWith('user.')) {
       const userData = payload.data;
       
+      // ===== IMPROVED EMAIL EXTRACTION FOR UNVERIFIED =====
       let email = null;
+      
+      // Method 1: Direct from email_addresses array
       if (userData.email_addresses && Array.isArray(userData.email_addresses) && userData.email_addresses.length > 0) {
         email = userData.email_addresses[0].email_address;
+        console.log("✅ Method 1 - Email found in email_addresses array:", email);
       }
+      // Method 2: Direct email field
+      else if (userData.email) {
+        email = userData.email;
+        console.log("✅ Method 2 - Email found in direct email field:", email);
+      }
+      // Method 3: From primary_email_address_id
+      else if (userData.primary_email_address_id && userData.email_addresses) {
+        const primaryEmail = userData.email_addresses.find(
+          (e: any) => e.id === userData.primary_email_address_id
+        );
+        if (primaryEmail) {
+          email = primaryEmail.email_address;
+          console.log("✅ Method 3 - Email found via primary_email_address_id:", email);
+        }
+      }
+      // Method 4: From raw data (fallback)
+      else if (userData.raw?.email_addresses?.[0]?.email_address) {
+        email = userData.raw.email_addresses[0].email_address;
+        console.log("✅ Method 4 - Email found in raw data:", email);
+      }
+      
+      console.log("📧 Unverified - Final extracted email:", email);
+      // ===== END IMPROVED EMAIL EXTRACTION =====
       
       triggerData = {
         ...triggerData,
@@ -197,8 +247,6 @@ export async function POST(req: Request) {
         imageUrl: userData.image_url || null,
         username: userData.username || null,
       };
-      
-      console.log("📧 Unverified - Email:", email);
     }
 
     await inngest.send({
