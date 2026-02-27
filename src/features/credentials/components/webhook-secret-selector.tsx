@@ -10,10 +10,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useWebhookSecrets } from "../hooks/use-webhook-secrets";
-import { PlusIcon, KeyIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react";
 
 interface WebhookSecretSelectorProps {
   value?: string;
@@ -30,20 +31,53 @@ export function WebhookSecretSelector({
   placeholder = "Select a webhook secret",
   disabled = false,
 }: WebhookSecretSelectorProps) {
-  const { data: credentials, isLoading } = useWebhookSecrets();
+  const { data: credentials, isLoading, error } = useWebhookSecrets();
+  
+  // Add detailed logging
+  useEffect(() => {
+    console.log("🔍 [WebhookSecretSelector] Component mounted/props updated");
+    console.log("🔍 [WebhookSecretSelector] Provider filter:", provider);
+    console.log("🔍 [WebhookSecretSelector] Is loading:", isLoading);
+    console.log("🔍 [WebhookSecretSelector] Error:", error);
+    console.log("🔍 [WebhookSecretSelector] Raw credentials data:", credentials);
+    
+    if (credentials) {
+      console.log("🔍 [WebhookSecretSelector] Number of credentials:", credentials.length);
+      credentials.forEach((cred, index) => {
+        console.log(`🔍 [WebhookSecretSelector] Credential ${index}:`, {
+          id: cred.id,
+          name: cred.name,
+          type: cred.type,
+          createdAt: cred.createdAt
+        });
+      });
+    }
+  }, [credentials, isLoading, error, provider]);
 
-  // Filter by provider if needed (you can add a `provider` field to credentials if needed)
+  // Filter by provider if needed
   const filteredCredentials = credentials?.filter(cred => {
     if (provider === 'all') return true;
-    // You can filter by name or add a provider field to credentials
-    return cred.name.toLowerCase().includes(provider);
+    // Case-insensitive check if name contains provider string
+    return cred.name.toLowerCase().includes(provider.toLowerCase());
   });
+
+  console.log("🔍 [WebhookSecretSelector] Filtered credentials count:", filteredCredentials?.length);
 
   if (isLoading) {
     return <Skeleton className="h-10 w-full" />;
   }
 
+  if (error) {
+    console.error("🔍 [WebhookSecretSelector] Error loading credentials:", error);
+    return (
+      <div className="text-sm text-red-500 p-2 border border-red-200 rounded">
+        Error loading secrets. Please try again.
+      </div>
+    );
+  }
+
   if (!filteredCredentials?.length) {
+    console.log("🔍 [WebhookSecretSelector] No filtered credentials found");
     return (
       <div className="flex flex-col gap-2">
         <div className="text-sm text-muted-foreground">
