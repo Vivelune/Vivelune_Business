@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "biome check",
     "ngrok:dev": "ngrok http 3000",
-    "format": "biome format --write",
-    "inngest:dev": "npx inngest-cli@1.12.1 dev",
+    "formatinngest:dev": "biome format --write",
+    "inngest": "npx inngest-cli@1.12.1 dev",
     "dev:all": "mprocs"
   },
   "dependencies": {

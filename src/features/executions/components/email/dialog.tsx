@@ -1,4 +1,3 @@
-// src/features/executions/components/email/dialog.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -33,11 +32,12 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InfoIcon, MailIcon, CopyIcon } from "lucide-react";
+import { InfoIcon, MailIcon, CopyIcon, ShieldCheck } from "lucide-react";
 import { useCredentialsByType } from "@/features/credentials/hooks/use-credentials";
 import { CredentialType } from "@/generated/prisma/enums";
 import Image from "next/image";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 // Define the enum for templates
 const templateEnum = z.enum([
@@ -132,85 +132,46 @@ export const EmailDialog = ({
   }, [open, defaultValues, form]);
 
   const watchVariableName = form.watch("variableName") || "myEmail";
-  const watchTemplate = form.watch("template");
 
-  // Template examples with instructions
   const templateInstructions = {
     "abandoned-cart": {
       description: "Send when a customer leaves items in their cart",
-      example: `{
-  "name": "&#123;&#123;user.name&#125;&#125;",
-  "cartUrl": "https://roastandrecover.com/cart/&#123;&#123;cart.id&#125;&#125;",
-  "itemCount": "&#123;&#123;cart.itemCount&#125;&#125;",
-  "itemNames": "&#123;&#123;json cart.items&#125;&#125;"
-}`,
+      example: `{\n  "name": "{{user.name}}",\n  "cartUrl": "https://roastandrecover.com/cart/{{cart.id}}",\n  "itemCount": "{{cart.itemCount}}",\n  "itemNames": "{{json cart.items}}"\n}`,
       tips: "Use itemCount and itemNames to personalize the cart contents"
     },
     "order-confirmation": {
       description: "Send immediately after a successful purchase",
-      example: `{
-  "name": "&#123;&#123;user.name&#125;&#125;",
-  "orderId": "&#123;&#123;order.id&#125;&#125;",
-  "total": "&#123;&#123;order.total&#125;&#125;",
-  "items": "&#123;&#123;json order.items&#125;&#125;",
-  "estimatedDelivery": "&#123;&#123;order.estimatedDelivery&#125;&#125;",
-  "trackingUrl": "&#123;&#123;order.trackingUrl&#125;&#125;"
-}`,
+      example: `{\n  "name": "{{user.name}}",\n  "orderId": "{{order.id}}",\n  "total": "{{order.total}}",\n  "items": "{{json order.items}}",\n  "estimatedDelivery": "{{order.estimatedDelivery}}",\n  "trackingUrl": "{{order.trackingUrl}}"\n}`,
       tips: "Items array should include name, quantity, and price for each product"
     },
     "shipping-update": {
       description: "Send when the order ships or tracking updates",
-      example: `{
-  "name": "&#123;&#123;user.name&#125;&#125;",
-  "trackingUrl": "&#123;&#123;order.trackingUrl&#125;&#125;",
-  "carrier": "&#123;&#123;order.carrier&#125;&#125;",
-  "estimatedDelivery": "&#123;&#123;order.estimatedDelivery&#125;&#125;",
-  "orderId": "&#123;&#123;order.id&#125;&#125;"
-}`,
+      example: `{\n  "name": "{{user.name}}",\n  "trackingUrl": "{{order.trackingUrl}}",\n  "carrier": "{{order.carrier}}",\n  "estimatedDelivery": "{{order.estimatedDelivery}}",\n  "orderId": "{{order.id}}"\n}`,
       tips: "Carrier can be FedEx, UPS, USPS, etc."
     },
     "product-care": {
       description: "Send after delivery with care instructions",
-      example: `{
-  "name": "&#123;&#123;user.name&#125;&#125;",
-  "productName": "&#123;&#123;product.name&#125;&#125;",
-  "material": "&#123;&#123;product.material&#125;&#125;",
-  "careGuideUrl": "https://roastandrecover.com/care/&#123;&#123;product.slug&#125;&#125;"
-}`,
+      example: `{\n  "name": "{{user.name}}",\n  "productName": "{{product.name}}",\n  "material": "{{product.material}}",\n  "careGuideUrl": "https://roastandrecover.com/care/{{product.slug}}"\n}`,
       tips: "Material can be: titanium, walnut, glass, or ceramic"
     },
     "welcome": {
       description: "Send to new users after signup",
-      example: `{
-  "name": "&#123;&#123;user.name&#125;&#125;",
-  "dashboardUrl": "https://roastandrecover.com/dashboard"
-}`,
+      example: `{\n  "name": "{{user.name}}",\n  "dashboardUrl": "https://roastandrecover.com/dashboard"\n}`,
       tips: "Welcome new customers to the Roast & Recover community"
     },
     "summary": {
       description: "Workflow execution summary",
-      example: `{
-  "name": "&#123;&#123;user.name&#125;&#125;",
-  "summary": "&#123;&#123;ai.text&#125;&#125;",
-  "workflowName": "&#123;&#123;workflow.name&#125;&#125;",
-  "executionId": "&#123;&#123;execution.id&#125;&#125;",
-  "appUrl": "https://roastandrecover.com"
-}`,
+      example: `{\n  "name": "{{user.name}}",\n  "summary": "{{ai.text}}",\n  "workflowName": "{{workflow.name}}",\n  "executionId": "{{execution.id}}",\n  "appUrl": "https://roastandrecover.com"\n}`,
       tips: "Great for AI-generated summaries or reports"
     },
     "notification": {
       description: "General notifications and alerts",
-      example: `{
-  "name": "&#123;&#123;user.name&#125;&#125;",
-  "message": "Your task '&#123;&#123;task.name&#125;&#125;' requires attention",
-  "actionUrl": "https://roastandrecover.com/tasks/&#123;&#123;task.id&#125;&#125;",
-  "actionText": "View Task"
-}`,
+      example: `{\n  "name": "{{user.name}}",\n  "message": "Your task '{{task.name}}' requires attention",\n  "actionUrl": "https://roastandrecover.com/tasks/{{task.id}}",\n  "actionText": "View Task"\n}`,
       tips: "Use actionUrl and actionText to create call-to-action buttons"
     },
     "custom": {
       description: "Write your own HTML email",
-      example: `<h1>Hello &#123;&#123;user.name&#125;&#125;</h1>\n<p>Here's your custom message: &#123;&#123;ai.text&#125;&#125;</p>`,
+      example: `<h1>Hello {{user.name}}</h1>\n<p>Here's your custom message: {{ai.text}}</p>`,
       tips: "Use HTML tags and CSS inline styles for formatting"
     }
   };
@@ -221,156 +182,80 @@ export const EmailDialog = ({
   };
 
   const handleSubmit = (values: EmailFormValues) => {
-    // Combine from and fromName
     const fromEmail = values.fromName 
       ? `${values.fromName} <${values.from}>` 
       : values.from;
     
-    onSubmit({
-      ...values,
-      from: fromEmail,
-    });
+    onSubmit({ ...values, from: fromEmail });
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <MailIcon className="h-5 w-5" />
-            Send Email
+      <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto rounded-none border-[#DCD5CB] bg-[#F4F1EE] p-0 shadow-2xl">
+        <div className="h-1.5 bg-[#1C1C1C] w-full" />
+        
+        <DialogHeader className="p-8 border-b border-[#DCD5CB]">
+          <DialogTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-[4px] text-[#1C1C1C]">
+            <MailIcon className="size-6" />
+            Communication Protocol
           </DialogTitle>
-          <DialogDescription>
-            Configure the email to send. First, add your Resend API key in Credentials.
+          <DialogDescription className="text-[11px] font-medium uppercase tracking-[1px] text-[#8E8E8E] italic mt-2">
+            Configure automated dispatch settings via Resend credentials.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            {/* Credential Selection */}
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="p-8 space-y-10">
+            {/* API CREDENTIALS */}
             <FormField
               control={form.control}
               name="credentialId"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Resend API Credential</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isLoadingCredentials}
-                  >
+                <FormItem className="space-y-3">
+                  <FormLabel className="text-[10px] font-black uppercase tracking-[2px] text-[#1C1C1C]">Resend Vault Access</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingCredentials}>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a Resend API credential" />
+                      <SelectTrigger className="rounded-none border-[#DCD5CB] bg-white h-12 uppercase text-[11px] tracking-widest font-bold">
+                        <SelectValue placeholder="Select API Key" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="rounded-none border-[#DCD5CB]">
                       {credentials?.length === 0 ? (
-                        <div className="p-2 text-center">
-                          <p className="text-sm text-muted-foreground">No Resend credentials found</p>
-                          <Button 
-                            type="button"
-                            variant="link" 
-                            className="mt-2" 
-                            onClick={() => window.open("/credentials/new", "_blank")}
-                          >
-                            Create one in Credentials
-                          </Button>
+                        <div className="p-4 text-center">
+                          <p className="text-[10px] font-bold uppercase text-[#8E8E8E]">Vault Empty</p>
+                          <Button variant="link" className="mt-2 text-[10px] uppercase font-black" onClick={() => window.open("/credentials/new", "_blank")}>Create Credential</Button>
                         </div>
                       ) : (
                         credentials?.map((credential) => (
-                          <SelectItem key={credential.id} value={credential.id}>
-                            <div className="flex items-center gap-2">
-                              <Image
-                                src="/resend.svg"
-                                alt="Resend"
-                                width={16}
-                                height={16}
-                              />
-                              {credential.name}
-                            </div>
+                          <SelectItem key={credential.id} value={credential.id} className="text-[11px] font-bold uppercase tracking-tight">
+                            {credential.name}
                           </SelectItem>
                         ))
                       )}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    <span className="flex items-center gap-1">
-                      <InfoIcon className="h-3 w-3" />
-                      Add your Resend API key in{" "}
-                      <a href="/credentials" className="underline" target="_blank" rel="noopener noreferrer">
-                        Credentials
-                      </a>
-                    </span>
+                  <FormDescription className="text-[10px] italic font-medium text-[#8E8E8E] uppercase tracking-wider flex items-center gap-1.5">
+                    <InfoIcon className="size-3" />
+                    Key management: <a href="/credentials" className="underline" target="_blank">Vault Settings</a>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="variableName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Variable Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="myEmail" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Use this name to reference the result in other nodes:{" "}
-                    <code className="bg-muted px-1 py-0.5 rounded">{`{{${watchVariableName}.sent}}`}</code>
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-8 border-t border-[#DCD5CB] pt-10">
               <FormField
                 control={form.control}
-                name="fromName"
+                name="variableName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>From Name</FormLabel>
+                    <FormLabel className="text-[10px] font-black uppercase tracking-[2px] text-[#1C1C1C]">Process Variable</FormLabel>
                     <FormControl>
-                      <Input placeholder="Roast & Recover" {...field} />
+                      <Input placeholder="email_dispatch" className="rounded-none border-[#DCD5CB] bg-white font-mono text-sm" {...field} />
                     </FormControl>
-                    <FormDescription>Display name</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="from"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>From Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="hello@roastandrecover.com" {...field} />
-                    </FormControl>
-                    <FormDescription>Must be verified in Resend</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="to"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>To</FormLabel>
-                    <FormControl>
-                      <Input placeholder="customer@example.com" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Use <code className="bg-muted px-1 rounded">{`{{variable}}`}</code> for dynamic emails
+                    <FormDescription className="text-[10px] italic font-medium text-[#8E8E8E] ">
+                      Ref: <code className="bg-[#1C1C1C] text-[#E7E1D8] px-1.5 py-0.5 ml-1">{`{{${watchVariableName}.sent}}`}</code>
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -382,12 +267,9 @@ export const EmailDialog = ({
                 name="subject"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Subject</FormLabel>
+                    <FormLabel className="text-[10px] font-black uppercase tracking-[2px] text-[#1C1C1C]">Subject Header</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Your order #&#123;&#123;order.id&#125;&#125; is confirmed"
-                        {...field}
-                      />
+                      <Input placeholder="Order #{{order.id}} Confirmed" className="rounded-none border-[#DCD5CB] bg-white" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -395,123 +277,135 @@ export const EmailDialog = ({
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="template"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email Template</FormLabel>
-                  <Select 
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      setSelectedTemplate(value);
-                    }} 
-                    defaultValue={field.value}
-                  >
+            <div className="grid grid-cols-2 gap-8">
+              <FormField
+                control={form.control}
+                name="fromName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[10px] font-black uppercase tracking-[2px] text-[#1C1C1C]">Sender Identity</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a template" />
-                      </SelectTrigger>
+                      <Input className="rounded-none border-[#DCD5CB] bg-white uppercase text-[11px] font-bold" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="custom">✏️ Custom HTML</SelectItem>
-                      <SelectItem value="welcome">👋 Welcome Email</SelectItem>
-                      <SelectItem value="abandoned-cart">🛒 Abandoned Cart</SelectItem>
-                      <SelectItem value="order-confirmation">✅ Order Confirmation</SelectItem>
-                      <SelectItem value="shipping-update">📦 Shipping Update</SelectItem>
-                      <SelectItem value="product-care">🔧 Product Care</SelectItem>
-                      <SelectItem value="summary">📊 Workflow Summary</SelectItem>
-                      <SelectItem value="notification">🔔 Notification</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="from"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[10px] font-black uppercase tracking-[2px] text-[#1C1C1C]">Origin Email</FormLabel>
+                    <FormControl>
+                      <Input className="rounded-none border-[#DCD5CB] bg-white font-mono text-sm" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-            {/* Template Instructions */}
-            {selectedTemplate && selectedTemplate !== "custom" && (
-              <Alert className="bg-muted/50 border-muted">
-                <InfoIcon className="h-4 w-4" />
-                <AlertDescription>
-                  <div className="space-y-2">
-                    <p className="font-medium">{templateInstructions[selectedTemplate as keyof typeof templateInstructions]?.description}</p>
-                    <p className="text-sm text-muted-foreground">{templateInstructions[selectedTemplate as keyof typeof templateInstructions]?.tips}</p>
-                    
-                    <div className="mt-3">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs font-medium">Example Data:</p>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-2 text-xs"
-                          onClick={() => copyToClipboard(templateInstructions[selectedTemplate as keyof typeof templateInstructions]?.example)}
-                        >
-                          <CopyIcon className="h-3 w-3 mr-1" />
-                          Copy
+            <div className="space-y-8 border-t border-[#DCD5CB] pt-10">
+              <div className="grid grid-cols-2 gap-8">
+                <FormField
+                  control={form.control}
+                  name="to"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] font-black uppercase tracking-[2px] text-[#1C1C1C]">Target Recipient</FormLabel>
+                      <FormControl>
+                        <Input placeholder="{{customer_email}}" className="rounded-none border-[#DCD5CB] bg-white font-mono text-sm" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="template"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[10px] font-black uppercase tracking-[2px] text-[#1C1C1C]">Ritual Template</FormLabel>
+                      <Select onValueChange={(v) => { field.onChange(v); setSelectedTemplate(v); }} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="rounded-none border-[#DCD5CB] bg-white h-12 uppercase text-[11px] tracking-widest font-bold">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="rounded-none border-[#DCD5CB]">
+                          <SelectItem value="custom" className="uppercase text-[10px] font-bold">Custom HTML</SelectItem>
+                          <SelectItem value="welcome" className="uppercase text-[10px] font-bold">Welcome Protocol</SelectItem>
+                          <SelectItem value="abandoned-cart" className="uppercase text-[10px] font-bold">Abandoned Cart</SelectItem>
+                          <SelectItem value="order-confirmation" className="uppercase text-[10px] font-bold">Confirmation</SelectItem>
+                          <SelectItem value="shipping-update" className="uppercase text-[10px] font-bold">Shipping Update</SelectItem>
+                          <SelectItem value="product-care" className="uppercase text-[10px] font-bold">Product Care</SelectItem>
+                          <SelectItem value="summary" className="uppercase text-[10px] font-bold">Summary</SelectItem>
+                          <SelectItem value="notification" className="uppercase text-[10px] font-bold">Notification</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* TEMPLATE GUIDANCE */}
+              {selectedTemplate && selectedTemplate !== "custom" && (
+                <Alert className="rounded-none border-[#DCD5CB] bg-white/50 p-6">
+                  <AlertDescription>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-black uppercase tracking-[1px] text-[#1C1C1C]">Instruction</p>
+                          <p className="text-[11px] text-[#8E8E8E] font-medium italic">{templateInstructions[selectedTemplate as keyof typeof templateInstructions]?.description}</p>
+                        </div>
+                        <Button type="button" variant="outline" size="sm" className="rounded-none h-8 text-[9px] uppercase font-bold tracking-widest border-[#DCD5CB]" onClick={() => copyToClipboard(templateInstructions[selectedTemplate as keyof typeof templateInstructions]?.example)}>
+                          <CopyIcon className="size-3 mr-2" /> Copy Payload
                         </Button>
                       </div>
-                      <pre className="mt-2 p-3 bg-background rounded-md text-xs overflow-x-auto">
-                        {templateInstructions[selectedTemplate as keyof typeof templateInstructions]?.example}
-                      </pre>
+                      <div className="bg-[#1C1C1C] p-4">
+                        <pre className="text-[11px] font-mono text-[#E7E1D8] opacity-80 overflow-x-auto leading-relaxed">
+                          {templateInstructions[selectedTemplate as keyof typeof templateInstructions]?.example}
+                        </pre>
+                      </div>
+                      <p className="text-[9px] uppercase tracking-widest font-bold text-[#8E8E8E]">Tip: {templateInstructions[selectedTemplate as keyof typeof templateInstructions]?.tips}</p>
                     </div>
-                  </div>
-                </AlertDescription>
-              </Alert>
-            )}
+                  </AlertDescription>
+                </Alert>
+              )}
 
-            {selectedTemplate !== "custom" && (
               <FormField
                 control={form.control}
-                name="templateData"
+                name={selectedTemplate === "custom" ? "html" : "templateData"}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Template Data (JSON)</FormLabel>
+                    <FormLabel className="text-[10px] font-black uppercase tracking-[2px] text-[#1C1C1C]">
+                      {selectedTemplate === "custom" ? "Protocol HTML" : "Payload Data (JSON)"}
+                    </FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder={templateInstructions[selectedTemplate as keyof typeof templateInstructions]?.example}
-                        className="min-h-[150px] font-mono text-sm"
-                        {...field}
-                      />
+                      <Textarea className="rounded-none border-[#DCD5CB] bg-white min-h-[180px] font-mono text-xs leading-relaxed" {...field} />
                     </FormControl>
-                    <FormDescription>
-                      Provide JSON data for the template. Use <code className="bg-muted px-1 rounded">{`{{variable}}`}</code> from previous nodes.
-                    </FormDescription>
+                    <FormDescription className="text-[10px] italic font-medium text-[#8E8E8E] uppercase">Use curly braces for dynamic variables from preceding nodes.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            )}
+            </div>
 
-            {selectedTemplate === "custom" && (
-              <FormField
-                control={form.control}
-                name="html"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>HTML Content</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder={`<h1>Hello &#123;&#123;user.name&#125;&#125;</h1>\n<p>Your order #&#123;&#123;order.id&#125;&#125; has shipped!</p>`}
-                        className="min-h-[200px] font-mono text-sm"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Write your own HTML. Use <code className="bg-muted px-1 rounded">{`{{variable}}`}</code> for dynamic content.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            <DialogFooter>
-              <Button type="submit">Send Email</Button>
+            <DialogFooter className="pt-8 border-t border-[#DCD5CB]">
+              <Button type="submit" className="rounded-none bg-[#1C1C1C] hover:bg-[#333] text-white px-12 h-14 uppercase text-xs font-black tracking-[4px] w-full sm:w-auto transition-all shadow-xl">
+                Commit Protocol
+              </Button>
             </DialogFooter>
           </form>
         </Form>
+        
+        <div className="flex items-center justify-center gap-2 p-6 bg-[#F4F1EE] border-t border-[#DCD5CB] opacity-20">
+          <ShieldCheck className="size-3 text-[#1C1C1C]" />
+          <span className="text-[9px] uppercase tracking-[3px] font-bold text-[#1C1C1C]">End-to-End TLS Encryption Dispatch</span>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -14,6 +14,10 @@ export type NodeStatusIndicatorProps = {
   className?: string;
 };
 
+/**
+ * SpinnerLoadingIndicator
+ * A prestigious overlay that treats the node like an object being processed.
+ */
 export const SpinnerLoadingIndicator = ({
   children,
 }: {
@@ -21,18 +25,24 @@ export const SpinnerLoadingIndicator = ({
 }) => {
   return (
     <div className="relative">
-      <StatusBorder className="border-blue-700/40">{children}</StatusBorder>
+      <StatusBorder className="border-[#1C1C1C]/20">{children}</StatusBorder>
 
-      <div className="bg-background/50 absolute inset-0 z-50 rounded-[9px] backdrop-blur-xs" />
-      <div className="absolute inset-0 z-50">
-        <span className="absolute top-[calc(50%-1.25rem)] left-[calc(50%-1.25rem)] inline-block h-10 w-10 animate-ping rounded-full bg-blue-700/20" />
-
-        <LoaderCircle className="absolute top-[calc(50%-0.75rem)] left-[calc(50%-0.75rem)] size-6 animate-spin text-blue-700" />
+      {/* Vivelune Matte Blur Overlay */}
+      <div className="bg-[#F4F1EE]/60 absolute inset-0 z-50 backdrop-blur-[2px]" />
+      
+      <div className="absolute inset-0 z-50 flex items-center justify-center">
+        {/* Subtle ping effect using the Charcoal palette */}
+        <span className="absolute inline-block h-12 w-12 animate-ping rounded-full bg-[#1C1C1C]/5" />
+        <LoaderCircle className="size-6 animate-spin text-[#1C1C1C] stroke-[1.5px]" />
       </div>
     </div>
   );
 };
 
+/**
+ * BorderLoadingIndicator
+ * A technical spinning gradient around the sharp edges of the node.
+ */
 export const BorderLoadingIndicator = ({
   children,
   className,
@@ -42,26 +52,27 @@ export const BorderLoadingIndicator = ({
 }) => {
   return (
     <>
-      <div className="absolute -top-0.5 -left-0.5 h-[calc(100%+4px)] w-[calc(100%+4px)]">
+      <div className="absolute -top-1 -left-1 h-[calc(100%+8px)] w-[calc(100%+8px)]">
         <style>
           {`
-        @keyframes spin {
-          from { transform: translate(-50%, -50%) rotate(0deg); }
-          to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        .spinner {
-          animation: spin 2s linear infinite;
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          width: 140%;
-          aspect-ratio: 1;
-          transform-origin: center;
-        }
-      `}
+            @keyframes spin {
+              from { transform: translate(-50%, -50%) rotate(0deg); }
+              to { transform: translate(-50%, -50%) rotate(360deg); }
+            }
+            .studio-spinner {
+              animation: spin 2s linear infinite;
+              position: absolute;
+              left: 50%;
+              top: 50%;
+              width: 150%;
+              aspect-ratio: 1;
+              transform-origin: center;
+            }
+          `}
         </style>
-        <div className={cn("absolute inset-0 overflow-hidden rounded-sm", className)}>
-          <div className="spinner rounded-full bg-[conic-gradient(from_0deg_at_50%_50%,rgba(42,67,233,0.5)_0deg,rgba(42,138,246,0)_360deg)]" />
+        <div className={cn("absolute inset-0 overflow-hidden rounded-none", className)}>
+          {/* Using a sophisticated Charcoal to Transparent gradient */}
+          <div className="studio-spinner rounded-full bg-[conic-gradient(from_0deg_at_50%_50%,rgba(28,28,28,0.4)_0deg,rgba(28,28,28,0)_360deg)]" />
         </div>
       </div>
       {children}
@@ -69,6 +80,10 @@ export const BorderLoadingIndicator = ({
   );
 };
 
+/**
+ * StatusBorder
+ * Sharp, 1px technical borders for status feedback.
+ */
 const StatusBorder = ({
   children,
   className,
@@ -80,7 +95,7 @@ const StatusBorder = ({
     <>
       <div
         className={cn(
-          "absolute -top-0.5 -left-0.5 h-[calc(100%+4px)] w-[calc(100%+4px)] rounded-md border-3",
+          "absolute -top-1 -left-1 h-[calc(100%+8px)] w-[calc(100%+8px)] rounded-none border-[1px] pointer-events-none",
           className,
         )}
       />
@@ -106,11 +121,15 @@ export const NodeStatusIndicator = ({
           return <>{children}</>;
       }
     case "success":
+      // Refined Emerald from the Vivelune palette
       return (
-        <StatusBorder className={cn("border-emerald-700/50",className)}>{children}</StatusBorder>
+        <StatusBorder className={cn("border-emerald-600/40", className)}>{children}</StatusBorder>
       );
     case "error":
-      return <StatusBorder className={cn("border-red-700/50", className)}>{children}</StatusBorder>;
+      // Refined Crimson for technical errors
+      return (
+        <StatusBorder className={cn("border-red-600/40", className)}>{children}</StatusBorder>
+      );
     default:
       return <>{children}</>;
   }
