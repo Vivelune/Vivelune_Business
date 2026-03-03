@@ -158,7 +158,7 @@ export function NodeSelector({
                 onClick={() => handleNodeSelect(nodeType)}
             >
                 <div className="flex items-center gap-6 w-full overflow-hidden">
-                    <div className="flex-shrink-0 size-8 flex items-center justify-center bg-white border border-[#DCD5CB] group-hover:border-[#1C1C1C] transition-colors">
+                    <div className="shrink-0 size-8 flex items-center justify-center bg-white border border-[#DCD5CB] group-hover:border-[#1C1C1C] transition-colors">
                         {typeof Icon === "string" ? (
                             <img src={Icon} alt={nodeType.label} className="size-4 object-contain grayscale group-hover:grayscale-0 transition-all" />
                         ) : (

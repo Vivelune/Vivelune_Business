@@ -95,7 +95,7 @@ const StatusBorder = ({
     <>
       <div
         className={cn(
-          "absolute -top-1 -left-1 h-[calc(100%+8px)] w-[calc(100%+8px)] rounded-none border-[1px] pointer-events-none",
+          "absolute -top-1 -left-1 h-[calc(100%+8px)] w-[calc(100%+8px)] rounded-none border pointer-events-none",
           className,
         )}
       />

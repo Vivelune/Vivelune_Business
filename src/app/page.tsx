@@ -1223,10 +1223,10 @@ export default function ViveluneLanding() {
   }, []);
 
   return (
-    <main ref={containerRef} className="bg-[#000] text-zinc-100 selection:bg-orange-500/50 overflow-x-hidden">
+    <main ref={containerRef} className="bg-black text-zinc-100 selection:bg-orange-500/50 overflow-x-hidden">
       
       {/* GLOBAL TICKER */}
-      <div className="fixed top-0 w-full z-[110] bg-orange-500 text-black py-1 overflow-hidden shadow-xl">
+      <div className="fixed top-0 w-full z-110 bg-orange-500 text-black py-1 overflow-hidden shadow-xl">
         <div className="flex whitespace-nowrap animate-marquee font-black text-[10px] uppercase tracking-[0.2em]">
           {[...Array(10)].map((_, i) => (
             <span key={i} className="mx-8 flex items-center gap-2">
@@ -1245,7 +1245,7 @@ export default function ViveluneLanding() {
       </div>
 
       {/* NAV BAR */}
-      <nav className="fixed top-10 w-full z-[100] px-6">
+      <nav className="fixed top-10 w-full z-100 px-6">
         <div className="max-w-7xl mx-auto h-16 rounded-full border border-white/5 bg-black/40 backdrop-blur-2xl px-8 flex items-center justify-between shadow-2xl">
           <Link href="/" className="flex items-center gap-3 group">
             <Image 
@@ -1284,7 +1284,7 @@ export default function ViveluneLanding() {
         <motion.div style={{ rotateX, scale }} className="max-w-7xl mx-auto text-center">
           <h1 className="text-[14vw] md:text-[200px] font-black tracking-tighter leading-[0.75] mb-24 pointer-events-none select-none">
             ACTUAL <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-800">INTELLIGENCE.</span>
+            <span className="text-transparent bg-clip-text bg-linear-to-b from-white to-zinc-800">INTELLIGENCE.</span>
           </h1>
 
           <div className="grid lg:grid-cols-2 gap-20 text-left items-end">
@@ -1304,7 +1304,7 @@ export default function ViveluneLanding() {
 
             {/* NEURAL CONSOLE */}
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 to-purple-600 rounded-[32px] blur opacity-10 group-hover:opacity-30 transition duration-1000" />
+              <div className="absolute -inset-1 bg-linear-to-r from-orange-500 to-purple-600 rounded-[32px] blur opacity-10 group-hover:opacity-30 transition duration-1000" />
               <div className="relative rounded-[30px] bg-black border border-white/10 overflow-hidden shadow-2xl">
                 <div className="px-6 py-4 bg-zinc-900/50 border-b border-white/5 flex justify-between items-center">
                    <div className="flex gap-2">
