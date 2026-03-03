@@ -34,7 +34,7 @@ export function PlaceholderNode({ children, onClick, className }: PlaceholderNod
       )}
       onClick={onClick}
     >
-      <div className="flex items-center justify-center min-w-[3rem] min-h-[3rem]">
+      <div className="flex items-center justify-center min-w-12 min-h-12">
         {children}
       </div>
 

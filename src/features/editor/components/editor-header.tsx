@@ -140,7 +140,7 @@ export const EditorHeader = ({ workflowId }: { workflowId: string }) => {
         <header className="flex h-16 shrink-0 items-center gap-4 border-b border-[#DCD5CB] px-6 bg-[#F4F1EE]">
             <div className="flex items-center gap-4">
                 <SidebarTrigger className="text-[#1C1C1C] hover:bg-[#E7E1D8] rounded-none transition-colors" />
-                <div className="h-6 w-[1px] bg-[#DCD5CB]" />
+                <div className="h-6 w-1px bg-[#DCD5CB]" />
             </div>
             <div className="flex flex-row items-center justify-between gap-x-4 w-full">
                 <EditorBreadcrumbs workflowId={workflowId} />

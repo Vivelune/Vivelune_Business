@@ -8,6 +8,7 @@ import { Provider } from "jotai";
 import { ClerkProvider } from "@/providers/clerk-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { HydrationProvider } from "@/providers/hydration-provider";
+import { WelcomeModal } from "@/components/welcome-modal";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -60,7 +61,14 @@ export default function RootLayout({
             <Provider>
             <HydrationProvider>
         {children}
-        <Toaster/>
+        <WelcomeModal/>
+                  <Toaster 
+                    position="bottom-right"
+                    toastOptions={{
+                      className: 'rounded-none border border-[#DCD5CB] bg-[#F4F1EE] text-[#1C1C1C] text-[10px] uppercase tracking-wider font-bold',
+                      duration: 4000,
+                    }}
+                  />
         </HydrationProvider>
         </Provider>
         </NuqsAdapter> 

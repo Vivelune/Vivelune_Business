@@ -109,106 +109,385 @@
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+/* ===== VIVELUNE CUSTOM STYLES ===== */
 
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
-  --font-serif: var(--font-serif);
+/* Instruction Panel System */
+.instruction-panel {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 50;
+  max-width: 24rem;
+  background-color: #1C1C1C;
+  border: 1px solid #DCD5CB;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease-out;
+}
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+.instruction-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(220, 213, 203, 0.2);
+}
 
-  --shadow-2xs: var(--shadow-2xs);
-  --shadow-xs: var(--shadow-xs);
-  --shadow-sm: var(--shadow-sm);
-  --shadow: var(--shadow);
-  --shadow-md: var(--shadow-md);
-  --shadow-lg: var(--shadow-lg);
-  --shadow-xl: var(--shadow-xl);
-  --shadow-2xl: var(--shadow-2xl);
+.instruction-panel-title {
+  font-size: 0.625rem;
+  font-weight: 900;
+  letter-spacing: 0.25rem;
+  text-transform: uppercase;
+  color: #E7E1D8;
+}
+
+.instruction-panel-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.6875rem;
+  color: rgba(231, 225, 216, 0.8);
+}
+
+.instruction-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.instruction-step:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.instruction-step-number {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  background-color: #E7E1D8;
+  color: #1C1C1C;
+  font-size: 0.5625rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.instruction-step-text {
+  flex: 1;
+  line-height: 1.375;
+}
+
+.instruction-highlight {
+  background-color: #E7E1D8;
+  color: #1C1C1C;
+  padding: 0 0.25rem;
+  font-family: monospace;
+  font-size: 0.625rem;
+}
+
+/* Tooltip System */
+.tooltip-enhanced {
+  position: absolute;
+  z-index: 50;
+  padding: 0.5rem 0.75rem;
+  background-color: #1C1C1C;
+  color: #E7E1D8;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid #DCD5CB;
+  pointer-events: none;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.tooltip-enhanced::after {
+  content: '';
+  position: absolute;
+  top: -0.25rem;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: #1C1C1C;
+  border-top: 1px solid #DCD5CB;
+  border-left: 1px solid #DCD5CB;
+}
+
+/* Welcome Modal */
+.welcome-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.welcome-modal-content {
+  max-width: 42rem;
+  width: 100%;
+  margin: 0 1rem;
+  background-color: #F4F1EE;
+  border: 1px solid #DCD5CB;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.4s ease-out;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px #1C1C1C, 0 0 0 4px #F4F1EE;
+  }
+  50% {
+    box-shadow: 0 0 0 2px #1C1C1C, 0 0 0 4px #F4F1EE, 0 0 0 6px rgba(28, 28, 28, 0.2);
+  }
+}
+
+/* Interactive Tutorial Highlights */
+.tutorial-highlight {
+  position: relative;
+  box-shadow: 0 0 0 2px #1C1C1C, 0 0 0 4px #F4F1EE;
+  transition: all 0.2s;
+  animation: pulse 2s infinite;
+}
+
+/* Contextual Help Icons */
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  background-color: #1C1C1C;
+  color: #E7E1D8;
+  font-size: 0.5rem;
+  font-weight: 900;
+  cursor: help;
+  margin-left: 0.25rem;
+}
+
+.help-icon:hover + .help-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.help-tooltip {
+  position: absolute;
+  z-index: 50;
+  padding: 0.5rem 0.75rem;
+  background-color: #1C1C1C;
+  color: #E7E1D8;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid #DCD5CB;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-5px);
+}
+
+/* React Flow Customizations */
+.vivelune-canvas .react-flow__node {
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.vivelune-canvas .react-flow__node:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.vivelune-canvas .react-flow__edge-path {
+  stroke: #1C1C1C;
+  stroke-width: 1.5;
+}
+
+.vivelune-canvas .react-flow__edge.animated path {
+  stroke-dasharray: 5;
+  animation: dashdraw 0.5s linear infinite;
+}
+
+@keyframes dashdraw {
+  from {
+    stroke-dashoffset: 10;
+  }
+}
+
+.vivelune-canvas .react-flow__controls {
+  box-shadow: none;
+  border: 1px solid #DCD5CB;
+  border-radius: 0;
+}
+
+.vivelune-canvas .react-flow__controls-button {
+  border: none;
+  border-bottom: 1px solid #DCD5CB;
+  background-color: white;
+  border-radius: 0;
+}
+
+.vivelune-canvas .react-flow__controls-button:hover {
+  background-color: #F4F1EE;
+}
+
+.vivelune-canvas .react-flow__minimap {
+  background-color: #F4F1EE;
+  border: 1px solid #DCD5CB;
+  border-radius: 0;
+}
+
+/* Loading States */
+.loading-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F4F1EE;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #DCD5CB;
+  border: 1px solid #1C1C1C;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1C1C1C;
+}
+
+/* Selection Styling */
+::selection {
+  background: #1C1C1C;
+  color: #E7E1D8;
+}
+
+/* Focus Styles */
+*:focus-visible {
+  outline: 2px solid #1C1C1C;
+  outline-offset: 2px;
 }
 
 @layer base {
   button:not([disabled]) {
-    [role="button"] :not([disabled]) & {
-      cursor: pointer;
-    }
-  }
-
-
-  @layer base {
-  :root {
-    /* DARK THEME (always active) */
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-
-    --radius: 0.5rem;
-
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    cursor: pointer;
   }
 }
 
+/* Dark Theme Overrides - These will work with Tailwind's dark mode */
+.dark {
+  --background: 0 0% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 0 0% 9%;
+  --secondary: 0 0% 14.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 14.9%;
+  --muted-foreground: 0 0% 63.9%;
+  --accent: 0 0% 14.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 14.9%;
+  --input: 0 0% 14.9%;
+  --ring: 0 0% 83.1%;
+  --radius: 0.5rem;
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
+}
+
+/* Utility classes for Vivelune-specific styles */
+.vivelune-bg-primary {
+  background-color: #1C1C1C;
+}
+
+.vivelune-bg-secondary {
+  background-color: #F4F1EE;
+}
+
+.vivelune-bg-tertiary {
+  background-color: #E7E1D8;
+}
+
+.vivelune-border {
+  border-color: #DCD5CB;
+}
+
+.vivelune-text-primary {
+  color: #1C1C1C;
+}
+
+.vivelune-text-secondary {
+  color: #E7E1D8;
+}
+
+.vivelune-text-muted {
+  color: #8E8E8E;
+}
+
+/* Node type specific styles */
+.trigger-node .react-flow__node {
+  border-left: 4px solid #1C1C1C;
+}
+
+.ai-node .react-flow__node {
+  border-left: 4px solid #4A4A4A;
+}
+
+.action-node .react-flow__node {
+  border-left: 4px solid #8E8E8E;
 }

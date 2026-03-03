@@ -74,7 +74,7 @@ export function WorkflowNode({
                     )}
 
                     {/* Technical "Feet" - purely aesthetic to make it look like a Studio object */}
-                    <div className="absolute -top-[1px] left-2 right-2 h-[1px] bg-[#1C1C1C]/10" />
+                    <div className="absolute -top-px left-2 right-2 h-1px bg-[#1C1C1C]/10" />
                 </NodeToolbar>
             )}
         </>
