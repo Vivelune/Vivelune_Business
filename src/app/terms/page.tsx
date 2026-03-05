@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react"
 import Link from "next/link"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { Scale, Users, CreditCard, Ban, AlertTriangle, Gavel, ArrowRight } from "lucide-react"
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -12,100 +13,135 @@ export default function TermsPage() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      // Entrance animation
       gsap.from(".fade-item", {
         opacity: 0,
-        y: 30,
+        y: 20,
         stagger: 0.1,
         duration: 0.8,
         ease: "power3.out",
-        scrollTrigger: {
-          trigger: ".fade-item",
-          start: "top 85%",
-        },
+      })
+
+      // Hover effect for the cards (Logic remains untouched)
+      const cards = gsap.utils.toArray<HTMLElement>(".term-card")
+      cards.forEach((card) => {
+        card.addEventListener("mouseenter", () => {
+          gsap.to(card, { borderColor: "var(--primary)", backgroundColor: "var(--secondary)", duration: 0.3 })
+        })
+        card.addEventListener("mouseleave", () => {
+          gsap.to(card, { borderColor: "var(--border)", backgroundColor: "transparent", duration: 0.3 })
+        })
       })
     }, containerRef)
 
     return () => ctx.revert()
   }, [])
 
+  const terms = [
+    {
+      title: "Use of Services",
+      icon: <Scale className="w-5 h-5 text-primary" />,
+      text: "Use Vivelune only lawfully. No misuse, illegal activity, or interference with service orchestration."
+    },
+    {
+      title: "Accounts",
+      icon: <Users className="w-5 h-5 text-primary" />,
+      text: "You are responsible for your credentials and all activity under your account. Keep your access keys secure."
+    },
+    {
+      title: "Subscription and Payment",
+      icon: <CreditCard className="w-5 h-5 text-primary" />,
+      text: "Premium features may require payment; payments are non-refundable unless explicitly stated in your plan."
+    },
+    {
+      title: "Termination",
+      icon: <Ban className="w-5 h-5 text-primary" />,
+      text: "Accounts may be suspended or terminated for violations without notice to protect our network integrity."
+    },
+    {
+      title: "Limitation of Liability",
+      icon: <AlertTriangle className="w-5 h-5 text-primary" />,
+      text: "Vivelune is provided 'as is'; we are not liable for indirect, incidental, or consequential workflow damages."
+    },
+    {
+      title: "Governing Law",
+      icon: <Gavel className="w-5 h-5 text-primary" />,
+      text: "These terms are governed by United States law. Disputes will be resolved within United States courts."
+    }
+  ]
+
   return (
-    <main ref={containerRef} className="bg-white text-black min-h-screen">
+    <main ref={containerRef} className="bg-background text-foreground min-h-screen relative selection:bg-primary/30">
+      {/* Dynamic Background Element */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none -z-10" />
+
       {/* NAVBAR */}
-      <header className="fixed top-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-b border-gray-300">
+      <header className="fixed top-0 inset-x-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="max-w-7xl mx-auto h-16 px-6 flex items-center justify-between">
-          <div className="text-xl font-semibold tracking-tight cursor-pointer">
-            <Link href="/welcome">Vivelune</Link></div>
-          <nav className="hidden md:flex items-center gap-8 text-sm text-gray-600">
-            <Link href="/docs" className="hover:text-gray-900 transition">Docs</Link>
-            <Link href="/contact" className="hover:text-gray-900 transition">Contact</Link>
-            <Link href="/login" className="hover:text-gray-900 transition">Login</Link>
+          <Link href="/welcome" className="flex items-center gap-2 group">
+            <div className="w-5 h-5 bg-primary rounded-full group-hover:scale-110 transition-transform" />
+            <span className="text-xl font-bold tracking-tighter">Vivelune</span>
+          </Link>
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
+            <Link href="/docs" className="hover:text-primary transition-colors">Docs</Link>
+            <Link href="/contact" className="hover:text-primary transition-colors">Contact</Link>
+            <Link href="/login" className="hover:text-primary transition-colors">Login</Link>
             <Link
               href="/signup"
-              className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-md shadow-md shadow-gray-400/20 transition"
+              className="bg-foreground text-background hover:bg-primary hover:text-primary-foreground px-5 py-2 rounded-full font-bold transition-all"
             >
-              Start Free Trial
+              Get Started
             </Link>
           </nav>
         </div>
       </header>
 
-      {/* CONTENT */}
-      <div className="pt-36 px-6 max-w-3xl mx-auto">
-        <h1 className="fade-item text-3xl font-semibold mb-6">Terms of Service</h1>
-
-        <div className="fade-item mb-6">
-          <h2 className="text-xl font-semibold mb-2">Use of Services</h2>
-          <p className="text-gray-700">
-            Use Vivelune only lawfully. No misuse, illegal activity, or interference with service.
-          </p>
+      {/* HEADER SECTION */}
+      <div className="pt-40 pb-16 px-6 max-w-4xl mx-auto">
+        <div className="fade-item flex items-center gap-2 mb-4">
+          <div className="h-px w-8 bg-primary" />
+          <span className="text-xs font-bold uppercase tracking-widest text-primary">Legal Terms</span>
         </div>
+        <h1 className="fade-item text-4xl md:text-6xl font-black tracking-tight mb-6">
+          Terms of <span className="text-primary">Service</span>
+        </h1>
+        <p className="fade-item text-muted-foreground text-lg max-w-2xl leading-relaxed">
+          By using Vivelune, you agree to these rules. We’ve kept them concise to respect your time—please read them carefully.
+        </p>
+      </div>
 
-        <div className="fade-item mb-6">
-          <h2 className="text-xl font-semibold mb-2">Accounts</h2>
-          <p className="text-gray-700">
-            You are responsible for your credentials and all activity under your account.
-          </p>
-        </div>
-
-        <div className="fade-item mb-6">
-          <h2 className="text-xl font-semibold mb-2">Subscription and Payment</h2>
-          <p className="text-gray-700">
-            Premium features may require payment; payments are non-refundable unless stated.
-          </p>
-        </div>
-
-        <div className="fade-item mb-6">
-          <h2 className="text-xl font-semibold mb-2">Termination</h2>
-          <p className="text-gray-700">
-            Accounts may be suspended or terminated for violations without notice.
-          </p>
-        </div>
-
-        <div className="fade-item mb-6">
-          <h2 className="text-xl font-semibold mb-2">Limitation of Liability</h2>
-          <p className="text-gray-700">
-            Vivelune is provided "as is"; not liable for indirect, incidental, or consequential damages.
-          </p>
-        </div>
-
-        <div className="fade-item mb-6">
-          <h2 className="text-xl font-semibold mb-2">Governing Law</h2>
-          <p className="text-gray-700">
-            These terms are governed by United States law. Disputes resolved in United States courts.
-          </p>
-        </div>
+      {/* TERMS GRID */}
+      <div className="px-6 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 pb-48">
+        {terms.map((term, i) => (
+          <div 
+            key={i} 
+            className="fade-item term-card border border-border p-8 rounded-3xl transition-all flex flex-col justify-between"
+          >
+            <div>
+              <div className="mb-6 p-3 w-fit rounded-2xl bg-secondary/50 border border-border/50">
+                {term.icon}
+              </div>
+              <h2 className="text-xl font-bold mb-3">{term.title}</h2>
+              <p className="text-muted-foreground leading-relaxed text-sm">
+                {term.text}
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* FOOTER */}
-     <footer className="border-t absolute w-full bottom-0 border-gray-300 px-6 py-10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-6 text-sm text-gray-500">
-          <span>© {new Date().getFullYear()} Vivelune</span>
-          <div className="flex gap-6 flex-wrap">
-            <Link href="/privacy" className="hover:text-gray-900 transition">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-gray-900 transition">Terms of Service</Link>
-            <Link href="/agreement" className="hover:text-gray-900 transition">User Agreement</Link>
-            <Link href="/docs" className="hover:text-gray-900 transition">Docs</Link>
-            <Link href="/contact" className="hover:text-gray-900 transition">Contact</Link>
+      <footer className="border-t border-border/50 bg-card/50 py-12 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex flex-col gap-1">
+            <span className="font-black text-xl tracking-tighter">Vivelune</span>
+            <span className="text-xs text-muted-foreground">© {new Date().getFullYear()} Orchestrating Intelligence.</span>
+          </div>
+          <div className="flex gap-6 text-sm font-medium text-muted-foreground">
+            <Link href="/privacy" className="hover:text-primary transition">Privacy</Link>
+            <Link href="/terms" className="hover:text-primary transition">Terms</Link>
+            <Link href="/agreement" className="hover:text-primary transition text-primary">User Agreement</Link>
+            <Link href="/docs" className="hover:text-primary transition">Docs</Link>
           </div>
         </div>
       </footer>

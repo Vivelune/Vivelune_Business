@@ -2,8 +2,9 @@
 
 import { Button } from "@/components/ui/button"
 import { useExecuteWorkflow } from "@/features/workflows/hooks/use-workflows"
-import { FlaskConicalIcon, Loader2Icon, ZapIcon } from "lucide-react"
+import { Loader2Icon, ZapIcon, Activity, Play } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export const ExecuteWorkflowButton = ({
     workflowId
@@ -19,42 +20,50 @@ export const ExecuteWorkflowButton = ({
     }
 
     return (
-        <div className="relative group">
-            {/* Decorative background glow for high-importance action */}
-            <div className="absolute -inset-1 bg-[#1C1C1C]/5 blur-md group-hover:bg-[#1C1C1C]/10 transition-all opacity-0 group-hover:opacity-100" />
-            
-            <Button 
-                size="lg" 
-                onClick={handleExecute} 
-                disabled={executeWorkflow.isPending}
-                className={cn(
-                    "relative h-14 px-10 rounded-none overflow-hidden transition-all duration-300",
-                    "bg-[#1C1C1C] text-[#E7E1D8] hover:bg-[#333] border border-[#1C1C1C]",
-                    "disabled:bg-[#8E8E8E] disabled:border-[#8E8E8E] shadow-2xl",
-                    "flex items-center gap-4"
-                )}
-            >
-                {/* Visual feedback for loading state */}
-                {executeWorkflow.isPending ? (
-                    <Loader2Icon className="size-4 animate-spin text-[#E7E1D8]" />
-                ) : (
-                    <ZapIcon className="size-4 text-[#E7E1D8] group-hover:scale-110 transition-transform" />
-                )}
+        <TooltipProvider>
+            <div className="relative group">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button 
+                            size="sm" 
+                            onClick={handleExecute} 
+                            disabled={executeWorkflow.isPending}
+                            className={cn(
+                                "relative h-8 px-4 rounded-none bg-black border border-emerald-900/50 text-emerald-500",
+                                "hover:bg-emerald-500 hover:text-black hover:border-emerald-500",
+                                "transition-all duration-300",
+                                "disabled:opacity-40 disabled:grayscale disabled:pointer-events-none",
+                                "flex items-center gap-2 overflow-hidden",
+                                executeWorkflow.isPending && "cursor-wait"
+                            )}
+                        >
+                            {/* Scanning line effect on hover */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/10 to-transparent -translate-y-full group-hover:animate-[scan_2s_linear_infinite] pointer-events-none" />
 
-                <span className="text-[11px] font-bold uppercase tracking-[4px]">
-                    {executeWorkflow.isPending ? "Activating Ritual..." : "Execute Ritual"}
-                </span>
+                            {executeWorkflow.isPending ? (
+                                <Loader2Icon className="size-3 animate-spin" />
+                            ) : (
+                                <Play className="size-3 fill-current" />
+                            )}
 
-                {/* Subtle corner detail to match the 'Blueprint' look */}
-                <div className="absolute top-0 right-0 p-[2px]">
-                    <div className="size-1 bg-[#E7E1D8]/20" />
-                </div>
-            </Button>
-            
-            {/* Technical Subtext */}
-            <p className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-full text-center text-[9px] uppercase tracking-[1px] font-medium text-[#8E8E8E] opacity-0 group-hover:opacity-100 transition-opacity">
-                Process will initiate across all nodes
-            </p>
-        </div>
+                            <span className="text-[10px] font-black uppercase tracking-[2px]">
+                                {executeWorkflow.isPending ? "Running_Task" : "Ignite_Flow"}
+                            </span>
+
+                            {/* Status Dot */}
+                            {!executeWorkflow.isPending && (
+                                <div className="ml-1 size-1 bg-emerald-500 rounded-full animate-pulse" />
+                            )}
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent 
+                        side="top" 
+                        className="rounded-none border-zinc-800 bg-black text-[8px] font-black uppercase tracking-widest text-zinc-400"
+                    >
+                        <p>Manual_Override_Execute</p>
+                    </TooltipContent>
+                </Tooltip>
+            </div>
+        </TooltipProvider>
     )
 }

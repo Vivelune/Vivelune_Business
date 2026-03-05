@@ -22,7 +22,8 @@ export const NodeType = {
   DISCORD: 'DISCORD',
   SLACK: 'SLACK',
   EMAIL: 'EMAIL',
-  CLERK_TRIGGER: 'CLERK_TRIGGER'
+  CLERK_TRIGGER: 'CLERK_TRIGGER',
+  CONDITIONAL: 'CONDITIONAL'
 } as const
 
 export type NodeType = (typeof NodeType)[keyof typeof NodeType]

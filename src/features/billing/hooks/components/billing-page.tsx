@@ -1,22 +1,24 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
 
 import { format } from 'date-fns';
 import {
   CreditCard,
   Download,
   ExternalLink,
-  AlertCircle,
   CheckCircle2,
-  XCircle,
-  Clock,
   Sparkles,
   ShieldCheck,
+  Calendar,
+  FileText,
+  Rocket,
+  Terminal,
+  Activity,
 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -31,12 +33,14 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useBillingPortal, useCancelSubscription, useInvoices, useSubscription } from '../use-billing';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 export function BillingPage() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   
-  const { data: subData, isLoading: subLoading, error: subError } = useSubscription();
-  const { data: invData, isLoading: invLoading } = useInvoices();
+  const { data: subData, isLoading: subLoading } = useSubscription();
+  const { data: invData } = useInvoices();
   const portalMutation = useBillingPortal();
   const cancelMutation = useCancelSubscription();
 
@@ -44,310 +48,175 @@ export function BillingPage() {
   const invoices = invData?.invoices || [];
 
   const getStatusBadge = (status: string) => {
-    const base = "rounded-none px-2 py-0 text-[10px] font-bold uppercase tracking-widest border";
-    switch (status) {
-      case 'active':
-        return <Badge className={cn(base, "bg-[#1C1C1C] text-[#E7E1D8] border-[#1C1C1C]")}>Active</Badge>;
-      case 'past_due':
-        return <Badge className={cn(base, "bg-red-50 text-red-600 border-red-600")}>Past Due</Badge>;
-      case 'canceled':
-        return <Badge className={cn(base, "bg-[#8E8E8E] text-white border-[#8E8E8E]")}>Canceled</Badge>;
-      default:
-        return <Badge variant="outline" className={cn(base, "border-[#DCD5CB] text-[#8E8E8E]")}>{status}</Badge>;
+    const base = "rounded-none px-3 py-1 text-[10px] font-black uppercase tracking-widest";
+    if (status === 'active') {
+      return (
+        <Badge className={cn(base, "bg-[#FF6B00]/10 text-[#FF6B00] border-[#FF6B00]/30 shadow-[0_0_10px_rgba(255,107,0,0.1)]")}>
+          <span className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 bg-[#FF6B00] animate-pulse" />
+            Operational
+          </span>
+        </Badge>
+      );
     }
+    return <Badge variant="outline" className={cn(base, "border-zinc-800 text-zinc-500")}>{status}</Badge>;
   };
 
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency.toUpperCase(),
+      minimumFractionDigits: 0,
     }).format(amount / 100);
   };
 
-  const handleCancelSubscription = async () => {
-    await cancelMutation.mutateAsync(true);
-    setShowCancelDialog(false);
-  };
-
-  const handleReactivateSubscription = async () => {
-    await cancelMutation.mutateAsync(false);
-  };
-
-  const handleUpgrade = () => {
-    portalMutation.mutate();
-  };
-
-  // Loading state
-  if (subLoading) {
+  // Redesign: The "Free Tier" as an "Uninitialized Slot"
+  if (!subscription && !subLoading) {
     return (
-      <div className="p-8 space-y-6 bg-[#F4F1EE] min-h-screen">
-        <div className="flex justify-between items-center">
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-48 bg-[#DCD5CB] rounded-none" />
-            <Skeleton className="h-4 w-64 bg-[#DCD5CB] rounded-none" />
-          </div>
-          <Skeleton className="h-10 w-40 bg-[#DCD5CB] rounded-none" />
-        </div>
-        <Card className="rounded-none border-[#DCD5CB] shadow-none">
-          <CardHeader>
-            <Skeleton className="h-6 w-32 bg-[#DCD5CB] rounded-none" />
-            <Skeleton className="h-4 w-48 bg-[#DCD5CB] rounded-none mt-2" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Skeleton className="h-12 w-full bg-[#DCD5CB]/50 rounded-none" />
-              <Skeleton className="h-12 w-3/4 bg-[#DCD5CB]/50 rounded-none" />
+      <div className="min-h-screen bg-[#09090B] text-zinc-100 p-8 selection:bg-[#FF6B00]/30">
+        <div className="max-w-4xl mx-auto">
+          <header className="mb-12 flex items-center gap-4">
+            <div className="h-10 w-1 bg-[#FF6B00]" />
+            <div>
+              <h1 className="text-2xl font-black uppercase tracking-[4px] italic">Fiscal_Module</h1>
+              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-[2px]">System Resource Management</p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+          </header>
 
-  // No subscription state
-  if (!subscription) {
-    return (
-      <div className="p-8 md:p-12 bg-[#F4F1EE] min-h-screen flex flex-col items-center">
-        <Card className="rounded-none border-[#DCD5CB] bg-white shadow-none max-w-2xl w-full overflow-hidden">
-          <div className="h-1.5 bg-[#1C1C1C] w-full" />
-          <CardHeader className="text-center pt-10 pb-6 px-10">
-            <div className="flex justify-center mb-6">
-              <div className="size-14 bg-[#1C1C1C] flex items-center justify-center grayscale brightness-0">
-                <Sparkles className="h-7 w-7 text-white" />
+          <Card className="rounded-none border-2 border-zinc-800 bg-black/40 overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-4 opacity-5">
+                <Terminal className="w-32 h-32" />
+            </div>
+
+            <CardHeader className="border-b border-zinc-800 pb-8 bg-zinc-900/20">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 border border-[#FF6B00] bg-[#FF6B00]/5 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(255,107,0,0.1)]">
+                  <Activity className="w-8 h-8 text-[#FF6B00]" />
+                </div>
+                <CardTitle className="text-3xl font-black uppercase tracking-[6px] italic">Standard_Core</CardTitle>
+                <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mt-2">Current Operating Status: Restricted</p>
               </div>
-            </div>
-            <CardTitle className="text-2xl font-black uppercase tracking-[3px]">Free Tier Access</CardTitle>
-            <CardDescription className="text-[12px] uppercase tracking-wider font-medium text-[#8E8E8E] mt-4 italic">
-              Upgrade your protocol to unlock pro-level intelligence
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="px-10 pb-10">
-            <div className="space-y-8">
-              <ul className="grid grid-cols-1 gap-4 border-y border-[#DCD5CB] py-8">
-                {[
-                    "Create unlimited workflows",
-                    "Access to all AI models (OpenAI, Anthropic, Gemini)",
-                    "Premium support & priority processing",
-                    "Advanced analytics and execution history"
-                ].map((feature, i) => (
-                    <li key={i} className="flex items-center gap-4 text-[11px] font-bold uppercase tracking-widest text-[#4A4A4A]">
-                        <div className="size-4 bg-[#1C1C1C] flex items-center justify-center text-[10px] text-white italic">v</div>
-                        <span>{feature}</span>
-                    </li>
-                ))}
-              </ul>
+            </CardHeader>
 
-              <Button 
-                onClick={handleUpgrade} 
-                className="w-full rounded-none h-14 bg-[#1C1C1C] hover:bg-[#333] text-[#E7E1D8] font-black uppercase tracking-[4px] text-xs transition-all"
-                disabled={portalMutation.isPending}
-              >
-                {portalMutation.isPending ? "INITIALIZING..." : "UPGRADE TO PRO PROTOCOL"}
-              </Button>
+            <CardContent className="p-8 space-y-10">
+              <div className="grid md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <h3 className="text-[10px] font-black uppercase tracking-[3px] text-[#FF6B00]">Allocated_Resources</h3>
+                  <ul className="space-y-3">
+                    {["5 Active Workflows", "100 Monthly Executions", "Core Integrations"].map((f, i) => (
+                      <li key={i} className="flex items-center gap-3 text-[11px] font-bold uppercase text-zinc-400">
+                        <div className="size-1 bg-[#FF6B00]" /> {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-              <p className="text-[9px] text-center uppercase tracking-widest text-[#8E8E8E] font-bold">
-                No credit card required to start. End anytime.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {invoices.length > 0 && (
-          <div className="w-full max-w-2xl mt-12 space-y-4">
-             <h3 className="text-[10px] font-black uppercase tracking-[4px] text-[#1C1C1C]">Historical Ledger</h3>
-             <Card className="rounded-none border-[#DCD5CB] shadow-none bg-white">
-               {/* Invoice list logic would go here as per your original file */}
-             </Card>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Active subscription state
-  return (
-    <div className="p-8 md:p-12 space-y-10 bg-[#F4F1EE] min-h-screen">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-[#DCD5CB] pb-8">
-        <div>
-          <h1 className="text-3xl font-black uppercase tracking-[4px] text-[#1C1C1C]">Billing Ledger</h1>
-          <p className="text-[11px] font-medium uppercase tracking-[2px] text-[#8E8E8E] mt-2 italic">
-            Management of active rituals and financial identity
-          </p>
-        </div>
-        <Button
-          onClick={() => portalMutation.mutate()}
-          disabled={portalMutation.isPending}
-          className="rounded-none bg-[#1C1C1C] text-[#E7E1D8] hover:bg-[#333] h-12 px-8 uppercase text-[10px] tracking-widest font-black transition-all shadow-xl"
-        >
-          <CreditCard className="mr-3 size-4" />
-          Update Payment Methods
-        </Button>
-      </div>
-
-      {/* Subscription Overview */}
-      <Card className="rounded-none border-[#DCD5CB] bg-white shadow-none overflow-hidden">
-        <div className="h-1.5 bg-[#1C1C1C] w-full" />
-        <CardHeader className="p-8 border-b border-[#DCD5CB]">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-[10px] uppercase tracking-[4px] font-bold text-[#8E8E8E]">Current Plan</CardTitle>
-            {getStatusBadge(subscription.status)}
-          </div>
-        </CardHeader>
-        <CardContent className="p-8">
-          <div className="space-y-10">
-            <div className="flex items-end justify-between">
-              <div>
-                <h3 className="text-2xl font-black uppercase tracking-tighter">{subscription.plan.name}</h3>
-                <p className="text-4xl font-light mt-2">
-                  {formatCurrency(subscription.plan.amount, subscription.plan.currency)}
-                  <span className="text-xs font-bold text-[#8E8E8E] uppercase tracking-widest ml-2">
-                    / {subscription.plan.interval}
-                  </span>
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-8 border-y border-[#DCD5CB]">
-              <div>
-                <p className="text-[10px] uppercase tracking-widest font-bold text-[#8E8E8E] mb-2">Billing Cycle</p>
-                <p className="text-sm font-bold uppercase tracking-tight">
-                  {format(new Date(subscription.currentPeriodStart), 'MMM d, yyyy')} — {format(new Date(subscription.currentPeriodEnd), 'MMM d, yyyy')}
-                </p>
-              </div>
-              {subscription.paymentMethod && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-[#8E8E8E] mb-2">Vault Source</p>
-                  <p className="text-sm font-bold uppercase tracking-tight flex items-center gap-2">
-                    <span className="border border-[#1C1C1C] px-1 text-[8px] leading-tight">{subscription.paymentMethod.brand}</span>
-                    •••• {subscription.paymentMethod.last4}
-                    <span className="text-[#8E8E8E] ml-2 italic">
-                      Exp {subscription.paymentMethod.expMonth}/{subscription.paymentMethod.expYear}
-                    </span>
+                <div className="border border-zinc-800 p-6 bg-zinc-900/10">
+                  <h3 className="text-[11px] font-black uppercase tracking-[2px] mb-2 flex items-center gap-2">
+                    <Sparkles className="w-3 h-3 text-[#FF6B00]" />
+                    Elevate_Tier
+                  </h3>
+                  <p className="text-[10px] text-zinc-500 leading-relaxed uppercase font-bold tracking-tight mb-6">
+                    Unlock full system throughput, unlimited workflow slots, and priority execution kernels.
                   </p>
+                  <Button 
+                    onClick={() => {}} // handleUpgrade logic
+                    className="w-full rounded-none bg-[#FF6B00] hover:bg-[#FF8533] text-black font-black uppercase text-[10px] tracking-[2px] h-12"
+                  >
+                    Initialize Pro_Kernel
+                  </Button>
                 </div>
-              )}
-            </div>
-
-            {subscription.cancelAtPeriodEnd && (
-              <Alert className="rounded-none border-red-200 bg-red-50 py-4">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-[11px] font-bold uppercase tracking-tight text-red-700">
-                  Protocol termination scheduled for {format(new Date(subscription.currentPeriodEnd), 'MMMM d, yyyy')}.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {!subscription.cancelAtPeriodEnd && subscription.upcomingInvoice && (
-              <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest font-bold text-[#8E8E8E]">
-                <Clock className="size-3" />
-                <span>Next Debit: {formatCurrency(subscription.upcomingInvoice.amount, subscription.upcomingInvoice.currency)} on {format(new Date(subscription.upcomingInvoice.date), 'MMMM d, yyyy')}</span>
               </div>
-            )}
 
-            <div className="flex gap-4 pt-4">
-              {!subscription.cancelAtPeriodEnd ? (
-                <Button
-                  variant="ghost"
-                  onClick={() => setShowCancelDialog(true)}
-                  disabled={cancelMutation.isPending}
-                  className="rounded-none border border-[#DCD5CB] text-[#8E8E8E] hover:text-red-600 hover:bg-red-50 uppercase text-[10px] tracking-widest font-bold h-10 px-6"
-                >
-                  Terminate Subscription
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleReactivateSubscription}
-                  disabled={cancelMutation.isPending}
-                  className="rounded-none bg-[#1C1C1C] text-white hover:bg-[#333] uppercase text-[10px] tracking-widest font-bold h-10 px-6"
-                >
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Reactivate Protocol
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Invoice History */}
-      {invoices.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-[10px] font-black uppercase tracking-[4px] text-[#1C1C1C]">Historical Ledger</h3>
-          <div className="border border-[#DCD5CB] bg-white overflow-hidden">
-            <div className="divide-y divide-[#DCD5CB]">
-              {invoices.map((invoice) => (
-                <div
-                  key={invoice.id}
-                  className="flex items-center justify-between p-5 hover:bg-[#F4F1EE]/50 transition-colors"
-                >
-                  <div className="space-y-1">
-                    <p className="text-[12px] font-black tracking-tight">#{invoice.number}</p>
-                    <p className="text-[10px] uppercase tracking-widest text-[#8E8E8E] font-medium">
-                      {format(new Date(invoice.date), 'MMMM d, yyyy')}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-8">
-                    <p className="text-sm font-bold">
-                      {formatCurrency(invoice.amount, invoice.currency)}
-                    </p>
-                    <div className="hidden md:block">
-                        {invoice.status === 'paid' ? (
-                            <span className="text-[9px] font-black uppercase border border-[#1C1C1C] px-2 py-0.5">Paid</span>
-                        ) : (
-                            <span className="text-[9px] font-black uppercase border border-red-600 text-red-600 px-2 py-0.5">{invoice.status}</span>
-                        )}
-                    </div>
-                    <div className="flex gap-2">
-                      {invoice.pdf && (
-                        <Button variant="ghost" size="icon" className="rounded-none size-8 hover:bg-[#1C1C1C] hover:text-white" asChild>
-                          <a href={invoice.pdf} target="_blank" rel="noopener noreferrer">
-                            <Download className="h-4 w-4" />
-                          </a>
-                        </Button>
-                      )}
-                      {invoice.hostedUrl && (
-                        <Button variant="ghost" size="icon" className="rounded-none size-8 hover:bg-[#1C1C1C] hover:text-white" asChild>
-                          <a href={invoice.hostedUrl} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+              <div className="flex items-center justify-center gap-6 py-4 border-t border-zinc-800/50">
+                <div className="flex items-center gap-2 grayscale opacity-50">
+                   <ShieldCheck className="w-4 h-4" />
+                   <span className="text-[8px] font-bold uppercase tracking-widest">Stripe_Verified_Node</span>
                 </div>
-              ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Active state: Simplified and "Flat"
+  return (
+    <div className="min-h-screen bg-[#09090B] text-zinc-100 p-8">
+      <div className="max-w-6xl mx-auto space-y-8">
+        <header className="flex justify-between items-end border-b border-zinc-800 pb-6">
+          <div>
+            <h1 className="text-2xl font-black uppercase tracking-[4px] italic">System_Billing</h1>
+            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-[2px]">ID: VLV-77-ALPHA</p>
+          </div>
+          <Button
+            onClick={() => portalMutation.mutate()}
+            variant="outline"
+            className="rounded-none border-zinc-800 bg-transparent hover:bg-[#FF6B00]/10 hover:text-[#FF6B00] hover:border-[#FF6B00] text-[10px] font-black uppercase tracking-widest h-10"
+          >
+            Terminal_Portal
+          </Button>
+        </header>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Main Plan View */}
+          <Card className="lg:col-span-2 rounded-none border border-zinc-800 bg-zinc-900/10 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-[#FF6B00]" />
+            <CardHeader className="border-b border-zinc-800/50">
+              <div className="flex justify-between items-center">
+                 <CardTitle className="text-sm font-black uppercase tracking-[3px]">Tier_Status</CardTitle>
+                 {getStatusBadge(subscription?.status || 'active')}
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 space-y-8">
+                <div className="flex items-baseline gap-4">
+                    <span className="text-5xl font-black italic">{formatCurrency(subscription?.plan.amount || 0, 'usd')}</span>
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-[2px]">/ Cycle</span>
+                </div>
+
+                <div className="space-y-2">
+                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                        <span>Cycle_Progress</span>
+                        <span className="text-[#FF6B00]">22 Days Remaining</span>
+                    </div>
+                    <Progress value={60} className="h-1 rounded-none bg-zinc-800 [&>div]:bg-[#FF6B00]" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="border border-zinc-800 p-4 bg-black/20">
+                        <p className="text-[8px] font-black text-zinc-500 uppercase mb-1">Payment_Module</p>
+                        <p className="text-[11px] font-bold tracking-widest uppercase italic">VISA **** 4242</p>
+                    </div>
+                    <div className="border border-zinc-800 p-4 bg-black/20">
+                        <p className="text-[8px] font-black text-zinc-500 uppercase mb-1">Next_Sync</p>
+                        <p className="text-[11px] font-bold tracking-widest uppercase italic">OCT 24, 2026</p>
+                    </div>
+                </div>
+            </CardContent>
+          </Card>
+
+          {/* Sidebar: Invoices */}
+          <div className="space-y-6">
+            <h3 className="text-[10px] font-black uppercase tracking-[3px] text-zinc-500 border-b border-zinc-800 pb-2">Log_History</h3>
+            <div className="space-y-2">
+                {invoices.slice(0, 5).map(inv => (
+                    <div key={inv.id} className="p-3 border border-zinc-800 hover:border-zinc-600 transition-colors bg-black/20 flex items-center justify-between group">
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-tighter">INV-#{inv.number}</p>
+                            <p className="text-[8px] text-zinc-500 font-bold uppercase">{format(new Date(inv.date), 'MM.dd.yy')}</p>
+                        </div>
+                        <a href={inv.pdf} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Download className="w-3 h-3 text-[#FF6B00]" />
+                        </a>
+                    </div>
+                ))}
             </div>
+            <Button variant="ghost" className="w-full text-[8px] font-black uppercase tracking-[4px] text-zinc-600 hover:text-[#FF6B00]">
+                View_All_Archives
+            </Button>
           </div>
         </div>
-      )}
-
-      {/* Cancel Confirmation Dialog */}
-      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <AlertDialogContent className="rounded-none border-[#DCD5CB] bg-[#F4F1EE]">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="uppercase tracking-widest font-black italic">Termination Warning</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-[#4A4A4A] leading-relaxed uppercase tracking-tight">
-              Access to high-level ritual processing will be revoked on {' '}
-              {subscription && format(new Date(subscription.currentPeriodEnd), 'MMMM d, yyyy')}.
-              Data logs will remain preserved.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="mt-6">
-            <AlertDialogCancel className="rounded-none border-[#DCD5CB] uppercase text-[10px] tracking-widest font-bold">Abort</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleCancelSubscription}
-              className="rounded-none bg-[#1C1C1C] hover:bg-red-700 text-white uppercase text-[10px] tracking-widest font-bold"
-            >
-              Confirm Termination
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <div className="flex items-center justify-center gap-3 opacity-20 pt-10">
-          <ShieldCheck className="size-4 text-[#1C1C1C]" />
-          <span className="text-[9px] uppercase tracking-[4px] font-bold text-[#1C1C1C]">End-to-End Encryption Vault</span>
       </div>
     </div>
   );

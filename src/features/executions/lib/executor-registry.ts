@@ -12,6 +12,7 @@ import { discordExecutor } from "../components/discord/executor";
 import { slackExecutor } from "../components/slack/executor";
 import { emailExecutor } from "../components/email/executor";
 import { clerkTriggerExecutor } from "@/features/triggers/components/clerk/executor";
+import { conditionalExecutor } from "../components/conditional/executor";
 
 export const executorRegistry : Record<NodeType, NodeExecutor> = {
     [NodeType.MANUAL_TRIGGER] : manualTriggerExecutor,
@@ -27,6 +28,7 @@ export const executorRegistry : Record<NodeType, NodeExecutor> = {
     [NodeType.SLACK] : slackExecutor,
     [NodeType.EMAIL]: emailExecutor, 
     [NodeType.CLERK_TRIGGER]: clerkTriggerExecutor, // Add this line
+    [NodeType.CONDITIONAL]: conditionalExecutor, // Add this
 
 
 

@@ -1,3 +1,5 @@
+// src/inngest/functions.ts
+
 import { NonRetriableError } from "inngest";
 import { inngest } from "./client";
 import prisma from "@/lib/prisma";
@@ -16,6 +18,56 @@ import { discordChannel } from "./channels/discord";
 import { slackChannel } from "./channels/slack";
 import { clerkChannel } from "./channels/clerk";
 
+// Helper function to build a graph of connections
+function buildConnectionGraph(connections: any[]) {
+  const graph: Record<string, string[]> = {};
+  const branchConnections: Record<string, Record<string, string[]>> = {};
+  
+  for (const conn of connections) {
+    // Initialize graph entry if it doesn't exist
+    if (!graph[conn.fromNodeId]) {
+      graph[conn.fromNodeId] = [];
+    }
+    
+    // ONLY treat as branch connection if it's specifically "true" or "false"
+    // These are the special handles from the Conditional node
+    if (conn.fromOutput === "true" || conn.fromOutput === "false") {
+      if (!branchConnections[conn.fromNodeId]) {
+        branchConnections[conn.fromNodeId] = {};
+      }
+      if (!branchConnections[conn.fromNodeId][conn.fromOutput]) {
+        branchConnections[conn.fromNodeId][conn.fromOutput] = [];
+      }
+      branchConnections[conn.fromNodeId][conn.fromOutput].push(conn.toNodeId);
+    } else {
+      // ALL other connections (including "source-1", "main", etc.) go to the regular graph
+      graph[conn.fromNodeId].push(conn.toNodeId);
+    }
+  }
+  
+  return { graph, branchConnections };
+}
+
+// Helper to get next nodes based on branch selection
+function getNextNodes(
+  currentNodeId: string,
+  graph: Record<string, string[]>,
+  branchConnections: Record<string, Record<string, string[]>>,
+  branchSelection?: Record<string, { selected: string }>
+): string[] {
+  // If this node has branch-specific connections and we have a branch selection
+  if (branchConnections[currentNodeId] && branchSelection?.[currentNodeId]) {
+    const selectedBranch = branchSelection[currentNodeId].selected;
+    const branchTargets = branchConnections[currentNodeId][selectedBranch];
+    if (branchTargets && branchTargets.length > 0) {
+      return branchTargets;
+    }
+  }
+  
+  // Fall back to regular connections
+  return graph[currentNodeId] || [];
+}
+
 export const executeWorkflow = inngest.createFunction(
   { 
     id: "execute-workflow", 
@@ -23,7 +75,6 @@ export const executeWorkflow = inngest.createFunction(
     onFailure: async({ event, step }) => {
       console.log(`❌ Workflow execution failed for event: ${event.data.event.id}`);
       
-      // Safely update execution only if it exists
       const execution = await prisma.execution.findUnique({
         where: { inngestEventId: event.data.event.id }
       });
@@ -69,7 +120,7 @@ export const executeWorkflow = inngest.createFunction(
       throw new NonRetriableError("Event ID or Workflow ID is missing");
     }
 
-    // Step 1: Check if workflow exists before creating execution
+    // Step 1: Check if workflow exists
     const workflow = await step.run("check-workflow-exists", async () => {
       return prisma.workflow.findUnique({
         where: { id: workflowId },
@@ -97,8 +148,8 @@ export const executeWorkflow = inngest.createFunction(
       });
     });
 
-    // Step 3: Prepare workflow (get nodes and sort topologically)
-    const sortedNodes = await step.run("prepare-workflow", async () => {
+    // Step 3: Prepare workflow data
+    const { nodes, connections, connectionGraph, branchConnections } = await step.run("prepare-workflow", async () => {
       const workflowWithData = await prisma.workflow.findUniqueOrThrow({
         where: { id: workflowId },
         include: {
@@ -111,51 +162,129 @@ export const executeWorkflow = inngest.createFunction(
         throw new NonRetriableError("Workflow has no nodes to execute");
       }
 
-      return topologicalSort(workflowWithData.nodes, workflowWithData.connections);
+      // Build connection graph for traversal
+      const { graph, branchConnections } = buildConnectionGraph(workflowWithData.connections);
+      
+      return {
+        nodes: workflowWithData.nodes,
+        connections: workflowWithData.connections,
+        connectionGraph: graph,
+        branchConnections
+      };
     });
 
-    // Step 4: Get user ID (already have from workflow check, but keep for clarity)
+    // DEBUG: Log connection information
+    console.log("🔍 DEBUG - Full connections data:", JSON.stringify(connections, null, 2));
+    console.log("🔍 DEBUG - Connection graph:", JSON.stringify(connectionGraph, null, 2));
+    console.log("🔍 DEBUG - Branch connections:", JSON.stringify(branchConnections, null, 2));
+
     const userId = workflow.userId;
-
-    // Step 5: Initialize context with any initial data from the trigger
     let context = event.data.initialData || {};
+    const branchSelections: Record<string, { selected: string }> = {};
 
-    // Step 6: Execute each node in order
-    for (const node of sortedNodes) {
-      console.log(`⚙️ Executing node: ${node.id} (${node.type})`);
+    // Step 4: Find starting nodes (nodes with no incoming connections or trigger nodes)
+    const incomingCounts: Record<string, number> = {};
+    for (const conn of connections) {
+      incomingCounts[conn.toNodeId] = (incomingCounts[conn.toNodeId] || 0) + 1;
+    }
+
+    // DEBUG: Log incoming counts
+    console.log("🔍 DEBUG - Incoming counts:", incomingCounts);
+
+    // Start with nodes that have no incoming connections
+    let nodesToExecute = nodes
+      .filter(node => !incomingCounts[node.id])
+      .map(node => node.id);
+
+    // DEBUG: Log starting nodes
+    console.log("🔍 DEBUG - Starting nodes:", nodesToExecute);
+    console.log("🔍 DEBUG - All node IDs:", nodes.map(n => n.id));
+    console.log("🔍 DEBUG - All node types:", nodes.map(n => `${n.id}: ${n.type}`));
+
+    // Track executed nodes to avoid cycles
+    const executed = new Set<string>();
+
+    // Step 5: Execute nodes in traversal order (not just linear order)
+    while (nodesToExecute.length > 0) {
+      const currentNodeId = nodesToExecute.shift()!;
       
+      if (executed.has(currentNodeId)) {
+        console.log(`🔍 DEBUG - Skipping already executed node: ${currentNodeId}`);
+        continue;
+      }
+
+      const currentNode = nodes.find(n => n.id === currentNodeId);
+      if (!currentNode) {
+        console.warn(`⚠️ Node ${currentNodeId} not found in workflow data`);
+        continue;
+      }
+
+      console.log(`⚙️ Executing node: ${currentNode.id} (${currentNode.type})`);
+
       try {
-        const executor = getExecutor(node.type as NodeType);
-        context = await executor({
-          data: node.data as Record<string, unknown>,
-          nodeId: node.id,
+        const executor = getExecutor(currentNode.type as NodeType);
+        const newContext = await executor({
+          data: currentNode.data as Record<string, unknown>,
+          nodeId: currentNode.id,
           context,
           userId,
           step,
           publish,
         });
-        console.log(`✅ Node ${node.id} executed successfully`);
-      } catch (nodeError) {
-        console.error(`❌ Node ${node.id} failed:`, nodeError);
+
+        context = newContext;
         
-        // Update execution with node failure
+        // If this was a conditional node, capture branch selection
+        if (currentNode.type === NodeType.CONDITIONAL && context._branchSelection?.[currentNode.id]) {
+          branchSelections[currentNode.id] = context._branchSelection[currentNode.id];
+          // Clean up the temporary branch selection from context
+          delete context._branchSelection;
+          console.log(`🔍 DEBUG - Conditional node ${currentNode.id} selected branch: ${branchSelections[currentNode.id].selected}`);
+        }
+
+        executed.add(currentNode.id);
+        console.log(`✅ Node ${currentNode.id} executed successfully`);
+
+        // Get next nodes based on branch selection if applicable
+        const nextNodes = getNextNodes(
+          currentNode.id,
+          connectionGraph,
+          branchConnections,
+          branchSelections
+        );
+
+        console.log(`🔍 DEBUG - Next nodes from ${currentNode.id}:`, nextNodes);
+
+        // Add new nodes to execute (avoid duplicates)
+        for (const nextId of nextNodes) {
+          if (!executed.has(nextId) && !nodesToExecute.includes(nextId)) {
+            console.log(`🔍 DEBUG - Adding node ${nextId} to execution queue`);
+            nodesToExecute.push(nextId);
+          }
+        }
+
+        console.log(`🔍 DEBUG - Current execution queue:`, nodesToExecute);
+
+      } catch (nodeError) {
+        console.error(`❌ Node ${currentNode.id} failed:`, nodeError);
+        
         await step.run("update-execution-failure", async () => {
           return prisma.execution.update({
             where: { inngestEventId },
             data: {
               status: ExecutionStatus.FAILED,
-              error: `Node ${node.id} (${node.type}) failed: ${nodeError instanceof Error ? nodeError.message : 'Unknown error'}`,
+              error: `Node ${currentNode.id} (${currentNode.type}) failed: ${nodeError instanceof Error ? nodeError.message : 'Unknown error'}`,
               errorStack: nodeError instanceof Error ? nodeError.stack : undefined,
               completedAt: new Date(),
             }
           });
         });
         
-        throw nodeError; // Re-throw to trigger onFailure handler
+        throw nodeError;
       }
     }
 
-    // Step 7: Update execution with success
+    // Step 6: Update execution with success
     await step.run("update-execution", async () => {
       return prisma.execution.update({
         where: { inngestEventId, workflowId },
@@ -168,6 +297,7 @@ export const executeWorkflow = inngest.createFunction(
     });
 
     console.log(`✅ Workflow ${workflowId} completed successfully`);
+    console.log(`🔍 DEBUG - Final context keys:`, Object.keys(context));
 
     return {
       workflowId,

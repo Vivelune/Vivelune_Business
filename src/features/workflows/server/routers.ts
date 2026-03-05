@@ -13,7 +13,6 @@ export const workflowsRouter = createTRPCRouter({
   execute: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      // Type assertion - protectedProcedure guarantees auth exists
       const auth = ctx.auth!;
       
       const workflow = await prisma.workflow.findUniqueOrThrow({
@@ -31,7 +30,6 @@ export const workflowsRouter = createTRPCRouter({
     }),
 
   create: premiumProcedure.mutation(({ ctx }) => {
-    // Type assertion - premiumProcedure guarantees auth exists
     const auth = ctx.auth!;
     
     return prisma.workflow.create({
@@ -52,7 +50,6 @@ export const workflowsRouter = createTRPCRouter({
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(({ ctx, input }) => {
-      // Type assertion - protectedProcedure guarantees auth exists
       const auth = ctx.auth!;
       
       return prisma.workflow.delete({
@@ -86,40 +83,74 @@ export const workflowsRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Type assertion - protectedProcedure guarantees auth exists
       const auth = ctx.auth!;
       const { id, nodes, edges } = input;
 
+      // First verify the workflow exists and belongs to the user
       const workflow = await prisma.workflow.findUniqueOrThrow({
         where: { id, userId: auth.userId },
       });
 
+      // Get all valid NodeType enum values
+      const validNodeTypes = Object.values(NodeType);
+      console.log('Valid node types:', validNodeTypes);
+
+      // Validate each node's type
+      for (const node of nodes) {
+        if (!node.type) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `Node ${node.id} has no type specified`,
+          });
+        }
+
+        if (!validNodeTypes.includes(node.type as NodeType)) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `Invalid node type: ${node.type}. Valid types are: ${validNodeTypes.join(', ')}`,
+          });
+        }
+      }
+
       return await prisma.$transaction(async (tx) => {
+        // Delete existing nodes
         await tx.node.deleteMany({
           where: { workflowId: id },
         });
 
-        await tx.node.createMany({
-          data: nodes.map((node) => ({
-            id: node.id,
-            workflowId: id,
-            name: node.type || "unknown",
-            type: node.type as NodeType,
-            position: node.position,
-            data: node.data || {},
-          })),
+        // Create new nodes with validated types
+        if (nodes.length > 0) {
+          await tx.node.createMany({
+            data: nodes.map((node) => ({
+              id: node.id,
+              workflowId: id,
+              name: node.type || "unknown",
+              type: node.type as NodeType, // Now safe because we validated above
+              position: node.position,
+              data: node.data || {},
+            })),
+          });
+        }
+
+        // Delete existing connections
+        await tx.connection.deleteMany({
+          where: { workflowId: id },
         });
 
-        await tx.connection.createMany({
-          data: edges.map((edge) => ({
-            workflowId: id,
-            fromNodeId: edge.source,
-            toNodeId: edge.target,
-            fromOutput: edge.sourceHandle || "main",
-            toInput: edge.targetHandle || "main",
-          })),
-        });
+        // Create new connections
+        if (edges.length > 0) {
+          await tx.connection.createMany({
+            data: edges.map((edge) => ({
+              workflowId: id,
+              fromNodeId: edge.source,
+              toNodeId: edge.target,
+              fromOutput: edge.sourceHandle || "main",
+              toInput: edge.targetHandle || "main",
+            })),
+          });
+        }
 
+        // Update workflow timestamp
         await tx.workflow.update({
           where: { id },
           data: { updatedAt: new Date() },
@@ -132,7 +163,6 @@ export const workflowsRouter = createTRPCRouter({
   updateName: protectedProcedure
     .input(z.object({ id: z.string(), name: z.string().min(1) }))
     .mutation(({ ctx, input }) => {
-      // Type assertion - protectedProcedure guarantees auth exists
       const auth = ctx.auth!;
       
       return prisma.workflow.update({
@@ -149,7 +179,6 @@ export const workflowsRouter = createTRPCRouter({
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Type assertion - protectedProcedure guarantees auth exists
       const auth = ctx.auth!;
       
       const workflow = await prisma.workflow.findUniqueOrThrow({
@@ -196,7 +225,6 @@ export const workflowsRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      // Type assertion - protectedProcedure guarantees auth exists
       const auth = ctx.auth!;
       const { page, pageSize, search } = input;
 

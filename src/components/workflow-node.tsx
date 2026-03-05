@@ -27,14 +27,14 @@ export function WorkflowNode({
         <>
             {showToolbar && (
                 <NodeToolbar 
-                    className="flex gap-x-1 bg-[#1C1C1C] p-1 border border-[#DCD5CB] shadow-xl"
+                    className="flex gap-x-1 bg-card border border-border shadow-xl p-1"
                     offset={10}
                 >
                     <Button 
                         size="icon" 
                         variant="ghost" 
                         onClick={onSettings}
-                        className="size-8 text-[#E7E1D8] hover:bg-[#333] hover:text-white rounded-none"
+                        className="size-8 text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-none"
                     >
                         <SettingsIcon className="size-3.5" />
                     </Button>
@@ -42,14 +42,14 @@ export function WorkflowNode({
                         size="icon" 
                         variant="ghost" 
                         onClick={onDelete}
-                        className="size-8 text-[#E7E1D8] hover:bg-red-900/50 hover:text-red-200 rounded-none"
+                        className="size-8 text-muted-foreground hover:bg-destructive/20 hover:text-destructive rounded-none"
                     >
                         <TrashIcon className="size-3.5" />
                     </Button>
                 </NodeToolbar>
             )}
 
-            {/* The actual node content - we wrap it to ensure it feels like a physical object */}
+            {/* The actual node content */}
             <div className="relative group transition-all">
                 {children}
             </div>
@@ -58,23 +58,23 @@ export function WorkflowNode({
                 <NodeToolbar
                     position={Position.Bottom}
                     isVisible
-                    className="flex flex-col items-center min-w-[140px] max-w-[220px] bg-[#E7E1D8] border border-[#DCD5CB] px-3 py-2 shadow-sm translate-y-2"
+                    className="flex flex-col items-center min-w-[140px] max-w-[220px] bg-popover border border-border px-3 py-2 shadow-sm translate-y-2"
                 >
                     <div className="flex items-center gap-2 mb-0.5">
-                        <div className="size-1 bg-[#1C1C1C]" />
-                        <p className="text-[10px] font-bold uppercase tracking-[2.5px] text-[#1C1C1C] leading-none">
+                        <div className="size-1 bg-primary rounded-full" />
+                        <p className="text-[10px] font-bold uppercase tracking-[2.5px] text-foreground leading-none">
                             {name}
                         </p>
                     </div>
                     
                     {description && (
-                        <p className="text-[10px] text-[#8E8E8E] italic font-light truncate w-full text-center px-1">
+                        <p className="text-[10px] text-muted-foreground italic font-light truncate w-full text-center px-1">
                             {description}
                         </p>
                     )}
 
-                    {/* Technical "Feet" - purely aesthetic to make it look like a Studio object */}
-                    <div className="absolute -top-px left-2 right-2 h-1px bg-[#1C1C1C]/10" />
+                    {/* Decorative line */}
+                    <div className="absolute -top-px left-2 right-2 h-px bg-border" />
                 </NodeToolbar>
             )}
         </>

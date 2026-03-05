@@ -2,492 +2,108 @@
 @import "tw-animate-css";
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.1450 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.1450 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.1450 0 0);
-  --primary: oklch(0.2050 0 0);
-  --primary-foreground: oklch(0.9850 0 0);
-  --secondary: oklch(0.9700 0 0);
-  --secondary-foreground: oklch(0.2050 0 0);
-  --muted: oklch(0.9700 0 0);
-  --muted-foreground: oklch(0.5560 0 0);
-  --accent: oklch(0.9700 0 0);
-  --accent-foreground: oklch(0.2050 0 0);
-  --destructive: oklch(0.5770 0.2450 27.3250);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9220 0 0);
-  --input: oklch(0.9220 0 0);
-  --ring: oklch(0.7080 0 0);
-  --chart-1: oklch(0.8100 0.1000 252);
-  --chart-2: oklch(0.6200 0.1900 260);
-  --chart-3: oklch(0.5500 0.2200 263);
-  --chart-4: oklch(0.4900 0.2200 264);
-  --chart-5: oklch(0.4200 0.1800 266);
-  --sidebar: oklch(0.9850 0 0);
-  --sidebar-foreground: oklch(0.1450 0 0);
-  --sidebar-primary: oklch(0.2050 0 0);
-  --sidebar-primary-foreground: oklch(0.9850 0 0);
-  --sidebar-accent: oklch(0.9700 0 0);
-  --sidebar-accent-foreground: oklch(0.2050 0 0);
-  --sidebar-border: oklch(0.9220 0 0);
-  --sidebar-ring: oklch(0.7080 0 0);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  --radius: 0.625rem;
-  --shadow-x: 0;
-  --shadow-y: 1px;
-  --shadow-blur: 3px;
-  --shadow-spread: 0px;
-  --shadow-opacity: 0.1;
-  --shadow-color: oklch(0 0 0);
-  --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
-  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
-  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
-  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
-  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
-  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
-  --tracking-normal: 0em;
-  --spacing: 0.25rem;
-}
-
-.dark {
-  --background: oklch(0.1450 0 0);
-  --foreground: oklch(0.9850 0 0);
-  --card: oklch(0.2050 0 0);
-  --card-foreground: oklch(0.9850 0 0);
-  --popover: oklch(0.2690 0 0);
-  --popover-foreground: oklch(0.9850 0 0);
-  --primary: oklch(0.6803 0.2144 39.8015);
-  --primary-foreground: oklch(0.2050 0 0);
-  --secondary: oklch(0.2690 0 0);
-  --secondary-foreground: oklch(0.9850 0 0);
-  --muted: oklch(0.2690 0 0);
-  --muted-foreground: oklch(0.7080 0 0);
-  --accent: oklch(0.3710 0 0);
-  --accent-foreground: oklch(0.9850 0 0);
-  --destructive: oklch(0.7040 0.1910 22.2160);
-  --destructive-foreground: oklch(0.9850 0 0);
-  --border: oklch(0.2750 0 0);
-  --input: oklch(0.3250 0 0);
-  --ring: oklch(0.5560 0 0);
-  --chart-1: oklch(0.8100 0.1000 252);
-  --chart-2: oklch(0.6200 0.1900 260);
-  --chart-3: oklch(0.5500 0.2200 263);
-  --chart-4: oklch(0.4900 0.2200 264);
-  --chart-5: oklch(0.4200 0.1800 266);
-  --sidebar: oklch(0.2050 0 0);
-  --sidebar-foreground: oklch(0.9850 0 0);
-  --sidebar-primary: oklch(0.4880 0.2430 264.3760);
-  --sidebar-primary-foreground: oklch(0.9850 0 0);
-  --sidebar-accent: oklch(0.2690 0 0);
-  --sidebar-accent-foreground: oklch(0.9850 0 0);
-  --sidebar-border: oklch(0.2750 0 0);
-  --sidebar-ring: oklch(0.4390 0 0);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  --radius: 0.625rem;
-  --shadow-x: 0;
-  --shadow-y: 1px;
-  --shadow-blur: 3px;
-  --shadow-spread: 0px;
-  --shadow-opacity: 0.1;
-  --shadow-color: oklch(0 0 0);
-  --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
-  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
-  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
-  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
-  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
-  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
-}
-
-/* ===== VIVELUNE CUSTOM STYLES ===== */
-
-/* Instruction Panel System */
-.instruction-panel {
-  position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  z-index: 50;
-  max-width: 24rem;
-  background-color: #1C1C1C;
-  border: 1px solid #DCD5CB;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
-  animation: slideIn 0.3s ease-out;
-}
-
-.instruction-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  border-bottom: 1px solid rgba(220, 213, 203, 0.2);
-}
-
-.instruction-panel-title {
-  font-size: 0.625rem;
-  font-weight: 900;
-  letter-spacing: 0.25rem;
-  text-transform: uppercase;
-  color: #E7E1D8;
-}
-
-.instruction-panel-content {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  font-size: 0.6875rem;
-  color: rgba(231, 225, 216, 0.8);
-}
-
-.instruction-step {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.instruction-step:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-.instruction-step-number {
-  flex-shrink: 0;
-  width: 1.25rem;
-  height: 1.25rem;
-  background-color: #E7E1D8;
-  color: #1C1C1C;
-  font-size: 0.5625rem;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.instruction-step-text {
-  flex: 1;
-  line-height: 1.375;
-}
-
-.instruction-highlight {
-  background-color: #E7E1D8;
-  color: #1C1C1C;
-  padding: 0 0.25rem;
-  font-family: monospace;
-  font-size: 0.625rem;
-}
-
-/* Tooltip System */
-.tooltip-enhanced {
-  position: absolute;
-  z-index: 50;
-  padding: 0.5rem 0.75rem;
-  background-color: #1C1C1C;
-  color: #E7E1D8;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  border: 1px solid #DCD5CB;
-  pointer-events: none;
-  animation: fadeIn 0.2s ease-out;
-}
-
-.tooltip-enhanced::after {
-  content: '';
-  position: absolute;
-  top: -0.25rem;
-  left: 50%;
-  transform: translateX(-50%) rotate(45deg);
-  width: 0.5rem;
-  height: 0.5rem;
-  background-color: #1C1C1C;
-  border-top: 1px solid #DCD5CB;
-  border-left: 1px solid #DCD5CB;
-}
-
-/* Welcome Modal */
-.welcome-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.3s ease-out;
-}
-
-.welcome-modal-content {
-  max-width: 42rem;
-  width: 100%;
-  margin: 0 1rem;
-  background-color: #F4F1EE;
-  border: 1px solid #DCD5CB;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  animation: slideUp 0.4s ease-out;
-}
-
-/* Animations */
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 2px #1C1C1C, 0 0 0 4px #F4F1EE;
-  }
-  50% {
-    box-shadow: 0 0 0 2px #1C1C1C, 0 0 0 4px #F4F1EE, 0 0 0 6px rgba(28, 28, 28, 0.2);
-  }
-}
-
-/* Interactive Tutorial Highlights */
-.tutorial-highlight {
-  position: relative;
-  box-shadow: 0 0 0 2px #1C1C1C, 0 0 0 4px #F4F1EE;
-  transition: all 0.2s;
-  animation: pulse 2s infinite;
-}
-
-/* Contextual Help Icons */
-.help-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 9999px;
-  background-color: #1C1C1C;
-  color: #E7E1D8;
-  font-size: 0.5rem;
-  font-weight: 900;
-  cursor: help;
-  margin-left: 0.25rem;
-}
-
-.help-icon:hover + .help-tooltip {
-  opacity: 1;
-  visibility: visible;
-}
-
-.help-tooltip {
-  position: absolute;
-  z-index: 50;
-  padding: 0.5rem 0.75rem;
-  background-color: #1C1C1C;
-  color: #E7E1D8;
-  font-size: 0.5625rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  border: 1px solid #DCD5CB;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.2s;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-5px);
-}
-
-/* React Flow Customizations */
-.vivelune-canvas .react-flow__node {
-  transition: box-shadow 0.2s, transform 0.2s;
-}
-
-.vivelune-canvas .react-flow__node:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
-}
-
-.vivelune-canvas .react-flow__edge-path {
-  stroke: #1C1C1C;
-  stroke-width: 1.5;
-}
-
-.vivelune-canvas .react-flow__edge.animated path {
-  stroke-dasharray: 5;
-  animation: dashdraw 0.5s linear infinite;
-}
-
-@keyframes dashdraw {
-  from {
-    stroke-dashoffset: 10;
-  }
-}
-
-.vivelune-canvas .react-flow__controls {
-  box-shadow: none;
-  border: 1px solid #DCD5CB;
-  border-radius: 0;
-}
-
-.vivelune-canvas .react-flow__controls-button {
-  border: none;
-  border-bottom: 1px solid #DCD5CB;
-  background-color: white;
-  border-radius: 0;
-}
-
-.vivelune-canvas .react-flow__controls-button:hover {
-  background-color: #F4F1EE;
-}
-
-.vivelune-canvas .react-flow__minimap {
-  background-color: #F4F1EE;
-  border: 1px solid #DCD5CB;
-  border-radius: 0;
-}
-
-/* Loading States */
-.loading-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #F4F1EE;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #DCD5CB;
-  border: 1px solid #1C1C1C;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #1C1C1C;
-}
-
-/* Selection Styling */
-::selection {
-  background: #1C1C1C;
-  color: #E7E1D8;
-}
-
-/* Focus Styles */
-*:focus-visible {
-  outline: 2px solid #1C1C1C;
-  outline-offset: 2px;
-}
-
-@layer base {
-  button:not([disabled]) {
-    cursor: pointer;
-  }
-}
-
-/* Dark Theme Overrides - These will work with Tailwind's dark mode */
-.dark {
-  --background: 0 0% 3.9%;
-  --foreground: 0 0% 98%;
-  --card: 0 0% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --popover: 0 0% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 0 0% 9%;
-  --secondary: 0 0% 14.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 14.9%;
-  --muted-foreground: 0 0% 63.9%;
-  --accent: 0 0% 14.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 14.9%;
-  --input: 0 0% 14.9%;
-  --ring: 0 0% 83.1%;
   --radius: 0.5rem;
-  --chart-1: 220 70% 50%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
+  /* Resend uses a very clean, high-contrast white/black setup */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0 0 0);
+  --primary: oklch(0 0 0);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.96 0 0);
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+  --border: oklch(0.92 0 0);
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0 0 0);
 }
 
-/* Utility classes for Vivelune-specific styles */
-.vivelune-bg-primary {
-  background-color: #1C1C1C;
+.dark {
+  /* This is where the Resend magic happens */
+  --background: oklch(0 0 0); /* Pure Black #000000 */
+  --foreground: oklch(0.98 0 0); /* Off-white for readability */
+  --card: oklch(0.1 0 0); /* Deep charcoal for cards */
+  --card-foreground: oklch(0.98 0 0);
+  --primary: oklch(1 0 0); /* Pure White primary buttons */
+  --primary-foreground: oklch(0 0 0); /* Black text on white buttons */
+  --secondary: oklch(0.15 0 0);
+  --muted: oklch(0.12 0 0);
+  --muted-foreground: oklch(0.6 0 0);
+  --accent: oklch(0.15 0 0);
+  --border: oklch(0.2 0 0); /* Subtle gray borders */
+  --input: oklch(0.2 0 0);
+  --ring: oklch(0.8 0 0);
 }
+/* Add to your globals.css */
+@layer base {
+  .bg-industrial-matte {
+    background-color: #09090B;
+    background-image: radial-gradient(rgba(255, 107, 0, 0.05) 1px, transparent 0);
+    background-size: 24px 24px; /* Subtle hardware grid */
+  }
+  @keyframes scan {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(400%); }
+  }
 
-.vivelune-bg-secondary {
-  background-color: #F4F1EE;
+  .react-flow__edge-path {
+    transition: stroke 0.3s, stroke-width 0.3s;
+  }
+  
+  /* The pulse animation for 'animated' edges */
+  .react-flow__edge.animated path {
+    stroke-dasharray: 10, 10;
+    animation: dashdraw 0.5s linear infinite;
+  }
+  
+  @keyframes dashdraw {
+    from {
+      stroke-dashoffset: 20;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  
+  /* Selected Edge State */
+  .react-flow__edge.selected .react-flow__edge-path {
+    stroke: #FF6B00 !important;
+    stroke-width: 3;
+    filter: drop-shadow(0 0 8px rgba(255, 107, 0, 0.5));
+  }
+  
+  /* Connection Line (the one you drag) */
+  .react-flow__connection-path {
+    stroke: #FF6B00;
+    stroke-width: 2;
+    stroke-dasharray: 5, 5;
+  }
+
+  
+  .edge-success {
+    stroke: #10b981; /* Emerald-500 */
+    filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.4));
+  }
+  
+  .edge-failure {
+    stroke: #ef4444; /* Red-500 */
+    filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.4));
+  }
+  /* High-velocity data packet animation */
+.edge-pulse {
+  stroke-dasharray: 4, 12; /* Short packets, long gaps */
+  stroke-linecap: square;  /* Hard edges on the data packets */
+  animation: flow 0.5s linear infinite; /* Faster travel speed */
 }
-
-.vivelune-bg-tertiary {
-  background-color: #E7E1D8;
-}
-
-.vivelune-border {
-  border-color: #DCD5CB;
-}
-
-.vivelune-text-primary {
-  color: #1C1C1C;
-}
-
-.vivelune-text-secondary {
-  color: #E7E1D8;
-}
-
-.vivelune-text-muted {
-  color: #8E8E8E;
-}
-
-/* Node type specific styles */
-.trigger-node .react-flow__node {
-  border-left: 4px solid #1C1C1C;
-}
-
-.ai-node .react-flow__node {
-  border-left: 4px solid #4A4A4A;
-}
-
-.action-node .react-flow__node {
-  border-left: 4px solid #8E8E8E;
+  /* The CRT/Terminal Scanline effect for Modals and Sidebars */
+  .scanline-overlay::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+    z-index: 10;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    opacity: 0.3;
+  }
 }
