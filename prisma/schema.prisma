@@ -84,6 +84,7 @@ enum NodeType{
   SLACK
   EMAIL // Add this
   CLERK_TRIGGER
+  CONDITIONAL
 }
 
 

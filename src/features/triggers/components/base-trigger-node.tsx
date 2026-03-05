@@ -59,7 +59,7 @@ export const BaseTriggerNode = memo(
 
             <NodeStatusIndicator
             status={status}
-            variant="border"
+            
             className="rounded-l-2xl"
             >
 

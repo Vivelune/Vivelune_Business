@@ -4,12 +4,11 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2, ArrowRight, ShieldCheck } from "lucide-react";
+import { Sparkles, Loader2, ArrowRight, ShieldCheck, Zap } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { usePrice } from "@/hooks/use-price";
@@ -27,7 +26,7 @@ export const UpgradeModal = ({
   open,
   onOpenChange,
   title = "Ascend to Vivelune Pro",
-  description = "Expand your studio capabilities with unlimited rituals and premium intelligence.",
+  description = "Industrial-grade automation for high-stakes workflows.",
   features = [
     "Unlimited automated rituals",
     "Full AI Suite (Claude, GPT-4o, Gemini 1.5 Pro)",
@@ -41,21 +40,11 @@ export const UpgradeModal = ({
   const { data: priceData, isLoading: isLoadingPrice } = usePrice(priceId);
   const price = priceData?.price;
 
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency.toUpperCase(),
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount / 100);
-  };
-
   const handleUpgrade = async () => {
     if (!priceId) {
-      toast.error('Studio configuration missing price ID');
+      toast.error('Configuration Error: Missing Price ID');
       return;
     }
-
     try {
       setIsLoading(true);
       const response = await fetch('/api/stripe/checkout', {
@@ -63,123 +52,83 @@ export const UpgradeModal = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priceId }),
       });
-    
       const data = await response.json();
-    
-      if (!response.ok) {
-        toast.error(data.error || 'Failed to initialize checkout');
-        setIsLoading(false);
-        return;
-      }
-    
-      if (data.url) {
-        window.location.href = data.url;
-      }
+      if (data.url) window.location.href = data.url;
     } catch (error) {
-      toast.error('Unable to connect to checkout services');
+      toast.error('System Link Failure: Unable to connect to Stripe');
       setIsLoading(false);
     }
   };
 
-  const getPriceDisplay = () => {
-    if (isLoadingPrice) {
-      return (
-        <div className="flex items-center justify-center gap-2 py-2">
-          <Loader2 className="h-4 w-4 animate-spin text-[#1C1C1C]" />
-          <span className="text-[10px] uppercase tracking-widest font-bold">Querying Stripe...</span>
-        </div>
-      );
-    }
-
-    if (price?.unitAmount && price?.currency) {
-      const amount = formatCurrency(price.unitAmount, price.currency);
-      const interval = price.recurring?.interval ? `/${price.recurring.interval}` : '';
-      
-      return (
-        <div className="text-center">
-          <p className="text-[10px] uppercase tracking-[4px] font-black text-[#1C1C1C]/40 mb-1">
-            {price.nickname || 'Premium Subscription'}
-          </p>
-          <div className="flex items-baseline justify-center gap-1">
-            <span className="text-4xl font-light tracking-tighter text-[#1C1C1C]">{amount}</span>
-            <span className="text-xs font-medium text-[#8E8E8E] uppercase tracking-widest">{interval}</span>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="text-center">
-        <p className="text-[10px] uppercase tracking-[4px] font-black text-[#1C1C1C]/40 mb-1">Pro Access</p>
-        <div className="flex items-baseline justify-center gap-1">
-          <span className="text-4xl font-light tracking-tighter text-[#1C1C1C]">$29</span>
-          <span className="text-xs font-medium text-[#8E8E8E] uppercase tracking-widest">/mo</span>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-[#F4F1EE] border-none rounded-none p-0 overflow-hidden shadow-2xl">
-        <div className="h-2 bg-[#1C1C1C]" />
+      <DialogContent className="sm:max-w-md bg-[#09090B] border border-[#27272A] rounded-none p-0 overflow-hidden shadow-[0_0_50px_-12px_rgba(255,107,0,0.2)]">
+        {/* Top Accent Bar */}
+        <div className="h-1 w-full bg-[#FF6B00] shadow-[0_0_15px_rgba(255,107,0,0.5)]" />
         
         <div className="p-8">
-          <DialogHeader>
-            <div className="mx-auto flex h-14 w-14 items-center justify-center bg-[#1C1C1C] mb-6">
-              <Sparkles className="h-6 w-6 text-[#E7E1D8]" />
+          <DialogHeader className="items-center">
+            <div className="flex items-center justify-center size-12 border border-[#FF6B00] bg-[#FF6B00]/5 mb-6 group">
+              <Zap className="h-5 w-5 text-[#FF6B00] fill-[#FF6B00]/20 transition-transform group-hover:scale-110" />
             </div>
-            <DialogTitle className="text-center text-2xl font-medium tracking-tight text-[#1C1C1C]">
+            <DialogTitle className="text-2xl font-bold tracking-tight text-zinc-100 uppercase italic">
               {title}
             </DialogTitle>
-            <DialogDescription className="text-center text-[#8E8E8E] font-light mt-2 italic">
+            <DialogDescription className="text-zinc-500 font-medium text-sm mt-2 max-w-[280px] text-center">
               {description}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-8">
-            <div className="space-y-4">
-              {features.map((feature, index) => (
-                <div key={index} className="flex items-center gap-4 group">
-                  <div className="size-5 flex items-center justify-center border border-[#DCD5CB] group-hover:border-[#1C1C1C] transition-colors">
-                    <div className="size-1.5 bg-[#1C1C1C]" />
-                  </div>
-                  <span className="text-xs font-medium uppercase tracking-wide text-[#4A4A4A]">{feature}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-y border-[#DCD5CB] py-8 my-4">
-              {getPriceDisplay()}
-            </div>
+          {/* Feature Grid */}
+          <div className="mt-8 space-y-3">
+            {features.map((feature, index) => (
+              <div key={index} className="flex items-center gap-3 py-2 px-3 border border-zinc-800/50 bg-zinc-900/30 hover:border-zinc-700 transition-colors">
+                <div className="size-1.5 bg-[#FF6B00] rounded-full shadow-[0_0_8px_rgba(255,107,0,0.6)]" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-300">
+                  {feature}
+                </span>
+              </div>
+            ))}
           </div>
 
-          <DialogFooter className="flex flex-col gap-3 sm:flex-col">
+          {/* Pricing Section */}
+          <div className="mt-8 mb-8 pt-6 border-t border-zinc-800 text-center">
+             <div className="inline-block px-2 py-1 bg-[#FF6B00]/10 border border-[#FF6B00]/20 mb-3">
+                <span className="text-[9px] uppercase tracking-[3px] font-black text-[#FF6B00]">Standard Operational Rate</span>
+             </div>
+             <div className="flex items-baseline justify-center gap-1">
+                <span className="text-5xl font-black tracking-tighter text-zinc-100">$29</span>
+                <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">/ Month</span>
+             </div>
+          </div>
+
+          <div className="space-y-4">
             <Button 
               onClick={handleUpgrade} 
-              className="w-full bg-[#1C1C1C] text-[#E7E1D8] hover:bg-[#333] rounded-none h-12 uppercase text-[11px] tracking-[3px] font-bold transition-all group"
+              disabled={isLoading}
+              className="w-full bg-[#FF6B00] text-black hover:bg-[#FF8533] rounded-none h-14 uppercase text-xs tracking-[2px] font-black transition-all group flex items-center justify-center gap-2"
             >
               {isLoading ? (
-                <Loader2 className="animate-spin" />
+                <Loader2 className="animate-spin size-5" />
               ) : (
-                <div className="flex items-center">
-                  Secure Pro Access
-                  <ArrowRight className="ml-2 size-3 group-hover:translate-x-1 transition-transform" />
-                </div>
+                <>
+                  Initialize Pro Protocol
+                  <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                </>
               )}
             </Button>
             
             <button
               onClick={() => onOpenChange(false)}
-              className="w-full text-[10px] uppercase tracking-widest text-[#8E8E8E] hover:text-[#1C1C1C] transition-colors font-bold py-2"
+              className="w-full text-[9px] uppercase tracking-[2px] text-zinc-500 hover:text-zinc-200 transition-colors font-bold"
             >
-              Return to Studio
+              Cancel Operation
             </button>
-          </DialogFooter>
+          </div>
           
-          <div className="mt-6 flex items-center justify-center gap-2 opacity-40">
-            <ShieldCheck className="size-3 text-[#1C1C1C]" />
-            <span className="text-[9px] uppercase tracking-[1px] font-bold text-[#1C1C1C]">Encrypted via Stripe</span>
+          <div className="mt-8 flex items-center justify-center gap-2 py-3 border-t border-zinc-900/50">
+            <ShieldCheck className="size-3 text-zinc-600" />
+            <span className="text-[8px] uppercase tracking-[1px] font-bold text-zinc-600">Secure Stripe-Layer Encryption</span>
           </div>
         </div>
       </DialogContent>

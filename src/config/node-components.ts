@@ -1,5 +1,6 @@
 import { InitialNode } from "@/components/initial-node";
 import { AnthropicNode } from "@/features/executions/components/anthropic/node";
+import { ConditionalNode } from "@/features/executions/components/conditional/node";
 import { DeepseekNode } from "@/features/executions/components/deepseek/node";
 import { DiscordNode } from "@/features/executions/components/discord/node";
 import { EmailNode } from "@/features/executions/components/email/node";
@@ -28,6 +29,8 @@ export const nodeComponents = {
     [NodeType.SLACK] : SlackNode,
     [NodeType.EMAIL]: EmailNode,
     [NodeType.CLERK_TRIGGER]: ClerkTriggerNode, // Add this
+    [NodeType.CONDITIONAL]: ConditionalNode, // Add this
+
 
 
 

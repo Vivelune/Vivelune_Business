@@ -6,84 +6,82 @@ import { Input } from "@/components/ui/input"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useSuspenseWorkflow, useUpdateWorkflow, useUpdateWorkflowName } from "@/features/workflows/hooks/use-workflows"
 import { useAtomValue } from "jotai"
-import { SaveIcon, Loader2Icon } from "lucide-react"
+import { SaveIcon, Loader2Icon, Edit2Icon, CheckCircle2, XCircle, Activity, Terminal, Cpu } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
 import { editorAtom } from "../store/atoms"
 import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
+/**
+ * EditorSaveButton: The Manual Override
+ */
 export const EditorSaveButton = ({ workflowId }: { workflowId: string }) => {
     const editor = useAtomValue(editorAtom);
     const saveWorkflow = useUpdateWorkflow();
+    const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
     const handleSave = () => {
         if (!editor) return;
-
         const nodes = editor.getNodes();
         const edges = editor.getEdges();
 
-        saveWorkflow.mutate({
-            id: workflowId,
-            nodes,
-            edges,
-        })
+        saveWorkflow.mutate({ id: workflowId, nodes, edges }, {
+            onSuccess: () => setLastSaved(new Date())
+        });
     }
 
     return (
-        <div className="ml-auto">
-            <Button 
-                size="sm" 
-                onClick={handleSave} 
+        <div className="flex items-center gap-4">
+            {lastSaved && (
+                <div className="hidden lg:flex items-center gap-2 px-3 border-l border-zinc-800">
+                    <div className="size-1 bg-emerald-500 animate-pulse" />
+                    <span className="text-[9px] font-black uppercase text-zinc-500 tracking-widest">
+                        Last_Sync::{lastSaved.toLocaleTimeString()}
+                    </span>
+                </div>
+            )}
+            
+            <Button
+                size="sm"
+                onClick={handleSave}
                 disabled={saveWorkflow.isPending}
-                className="bg-[#1C1C1C] text-[#E7E1D8] hover:bg-[#333] rounded-none px-6 h-9 uppercase text-[10px] tracking-[2px] font-bold transition-all border border-[#1C1C1C]"
+                className={cn(
+                    "rounded-none bg-[#FF6B00] hover:bg-[#FF8533] text-black font-black uppercase text-[10px] tracking-widest h-8 px-6 transition-all",
+                    saveWorkflow.isPending && "opacity-50"
+                )}
             >
                 {saveWorkflow.isPending ? (
-                    <Loader2Icon className="size-3.5 animate-spin" />
+                    <Loader2Icon className="size-3.5 animate-spin mr-2" />
                 ) : (
                     <SaveIcon className="size-3.5 mr-2" />
                 )}
-                {saveWorkflow.isPending ? "Archiving..." : "Save Changes"}
+                Commit_Changes
             </Button>
         </div>
     )
 }
 
+/**
+ * EditorNameInput: Direct Database Entry
+ */
 export const EditorNameInput = ({ workflowId }: { workflowId: string }) => {
     const { data: workflow } = useSuspenseWorkflow(workflowId);
     const updateWorkflow = useUpdateWorkflowName()
-
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState(workflow.name)
     const inputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        if (workflow.name) setName(workflow.name)
-    }, [workflow.name]);
-
-    useEffect(() => {
-        if (isEditing && inputRef.current) {
-            inputRef.current.focus();
-            inputRef.current.select();
-        }
-    }, [isEditing])
+    useEffect(() => { if (workflow.name) setName(workflow.name) }, [workflow.name]);
+    useEffect(() => { if (isEditing && inputRef.current) inputRef.current.focus(); }, [isEditing])
 
     const handleSave = async () => {
-        if (name === workflow.name) {
-            setIsEditing(false);
-            return;
-        }
+        if (name === workflow.name) return setIsEditing(false);
         try {
             await updateWorkflow.mutateAsync({ id: workflowId, name });
+            setIsEditing(false);
         } catch {
-            setName(workflow.name);
-        } finally {
-            setIsEditing(false)
-        }
-    }
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter") handleSave();
-        else if (e.key === "Escape") {
             setName(workflow.name);
             setIsEditing(false);
         }
@@ -91,65 +89,83 @@ export const EditorNameInput = ({ workflowId }: { workflowId: string }) => {
 
     if (isEditing) {
         return (
-            <Input
-                disabled={updateWorkflow.isPending}
-                ref={inputRef}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onBlur={handleSave}
-                onKeyDown={handleKeyDown}
-                className="h-8 w-auto min-w-[150px] bg-white border-[#DCD5CB] rounded-none text-xs focus-visible:ring-1 focus-visible:ring-[#1C1C1C]"
-            />
+            <div className="flex items-center gap-1">
+                <Input
+                    ref={inputRef}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onBlur={handleSave}
+                    onKeyDown={(e) => e.key === "Enter" ? handleSave() : e.key === "Escape" && setIsEditing(false)}
+                    className="h-7 w-auto min-w-[240px] bg-black border-zinc-700 rounded-none text-[11px] font-black uppercase tracking-widest text-[#FF6B00] focus-visible:ring-0"
+                />
+            </div>
         )
     }
 
     return (
-        <BreadcrumbItem
-            onClick={() => setIsEditing(true)}
-            className="cursor-pointer group"
-        >
-            <span className="text-[12px] font-medium tracking-tight text-[#1C1C1C] border-b border-transparent group-hover:border-[#1C1C1C] transition-all pb-0.5 italic">
-                {workflow.name}
-            </span>
-        </BreadcrumbItem>
+        <div className="flex items-center gap-3 group">
+            <div 
+                onClick={() => setIsEditing(true)}
+                className="cursor-pointer flex items-center gap-2"
+            >
+                <span className="text-[11px] font-black uppercase tracking-[2px] text-zinc-100 italic group-hover:text-[#FF6B00] transition-colors">
+                    {workflow.name}
+                </span>
+                <Edit2Icon className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400" />
+            </div>
+            
+            <Badge className="rounded-none bg-zinc-900 border-zinc-800 text-[8px] font-black text-emerald-500 uppercase h-5">
+                <Activity className="w-2.5 h-2.5 mr-1" />
+                Active_Link
+            </Badge>
+        </div>
     )
 }
 
-export const EditorBreadcrumbs = ({ workflowId }: { workflowId: string }) => {
-    return (
-        <Breadcrumb>
-            <BreadcrumbList>
-                <BreadcrumbItem>
-                    <BreadcrumbLink asChild className="text-[10px] uppercase tracking-[3px] font-bold text-[#8E8E8E] hover:text-[#1C1C1C] transition-colors">
-                        <Link prefetch href="/workflows">
-                            Workflows
-                        </Link>
-                    </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="text-[#DCD5CB]">
-                    <span className="text-[10px]">/</span>
-                </BreadcrumbSeparator>
-                <EditorNameInput workflowId={workflowId} />
-            </BreadcrumbList>
-        </Breadcrumb>
-    )
-}
-
+/**
+ * EditorHeader: The System Command Bar
+ */
 export const EditorHeader = ({ workflowId }: { workflowId: string }) => {
     return (
-        <header className="flex h-16 shrink-0 items-center gap-4 border-b border-[#DCD5CB] px-6 bg-[#F4F1EE]">
+        <header className="sticky top-0 z-50 h-14 bg-[#09090B] border-b border-zinc-900 px-4 flex items-center justify-between">
+            {/* Left: System Navigation */}
             <div className="flex items-center gap-4">
-                <SidebarTrigger className="text-[#1C1C1C] hover:bg-[#E7E1D8] rounded-none transition-colors" />
-                <div className="h-6 w-1px bg-[#DCD5CB]" />
+                <SidebarTrigger className="rounded-none hover:bg-zinc-900 text-zinc-500 hover:text-[#FF6B00] transition-colors" />
+                <div className="h-4 w-[1px] bg-zinc-800" />
+                
+                <Breadcrumb>
+                    <BreadcrumbList className="gap-2">
+                        <BreadcrumbItem>
+                            <BreadcrumbLink asChild>
+                                <Link href="/workflows" className="text-[9px] font-black uppercase tracking-widest text-zinc-600 hover:text-zinc-400">
+                                    Archive
+                                </Link>
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator className="text-zinc-800">/</BreadcrumbSeparator>
+                        <BreadcrumbItem>
+                            <EditorNameInput workflowId={workflowId} />
+                        </BreadcrumbItem>
+                    </BreadcrumbList>
+                </Breadcrumb>
             </div>
-            <div className="flex flex-row items-center justify-between gap-x-4 w-full">
-                <EditorBreadcrumbs workflowId={workflowId} />
-                <div className="flex items-center gap-4">
-                    <span className="hidden md:block text-[9px] uppercase tracking-[2px] text-[#8E8E8E] font-medium">
-                        Ritual Mode
-                    </span>
-                    <EditorSaveButton workflowId={workflowId} />
+
+            {/* Right: Telemetry & Controls */}
+            <div className="flex items-center gap-6">
+                <div className="hidden md:flex items-center gap-4">
+                    <div className="flex items-center gap-2 text-zinc-700">
+                        <Terminal className="size-3" />
+                        <span className="text-[8px] font-black uppercase tracking-[2px]">Terminal_01</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1 bg-zinc-950 border border-zinc-900">
+                        <Cpu className="size-3 text-[#FF6B00]" />
+                        <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">
+                            Edit_Mode
+                        </span>
+                    </div>
                 </div>
+                
+                <EditorSaveButton workflowId={workflowId} />
             </div>
         </header>
     )

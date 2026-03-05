@@ -31,7 +31,9 @@ export async function GET() {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch models from OpenAI');
+      const errorText = await response.text();
+      console.error("OpenAI API Error:", errorText);
+      throw new Error(`OpenAI API Error: ${errorText}`);
     }
 
     const data = await response.json();

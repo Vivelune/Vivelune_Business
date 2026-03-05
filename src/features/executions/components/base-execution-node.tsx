@@ -60,7 +60,7 @@ export const BaseExecutionNode = memo(
             onSettings={onSettings}
 
             >
-                <NodeStatusIndicator status={status} variant="border">
+                <NodeStatusIndicator status={status} >
                 <BaseNode status={status} onDoubleClick={onDoubleClick}>
                     <BaseNodeContent>
                     {
