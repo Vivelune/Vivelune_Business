@@ -2,50 +2,54 @@
 
 import { CredentialType } from "@/generated/prisma/enums";
 import { useRouter } from "next/navigation";
-import { useCreateCredential, useUpdateCredential } from "../hooks/use-credentials";
+import { useCreateCredential, useSuspenseCredential, useUpdateCredential } from "../hooks/use-credentials";
 import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import { useForm } from "react-hook-form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { 
-  ShieldCheck, 
-  KeyIcon, 
-  ArrowRight, 
-  Lock,
-  Eye,
-  EyeOff,
-  Copy,
-  Cpu,
-  Terminal,
-  Activity,
-  AlertTriangle
-} from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InfoIcon, ShieldCheck, KeyIcon, ArrowRight, LinkIcon, Activity, CpuIcon, TerminalIcon, EyeOffIcon, Eye, Copy, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 
 const formSchema = z.object({
-    name: z.string().min(1, "AUTH_ERR::NAME_REQUIRED"),
+    name: z.string().min(1, "Identity name is required"),
     type: z.enum(CredentialType),
-    value: z.string().min(1, "AUTH_ERR::KEY_REQUIRED"),
+    value: z.string().min(1, "API key is required"),
 })
 
 type FormValues = z.infer<typeof formSchema>
 
 const credentialTypeOptions = [
-    { value: CredentialType.OPENAI, label: "OpenAI" },
-    { value: CredentialType.GEMINI, label: "Gemini" },
-    { value: CredentialType.ANTHROPIC, label: "Anthropic" },
-    { value: CredentialType.DEEPSEEK, label: "DeepSeek" },
-    { value: CredentialType.RESEND, label: "Resend" },
-    { value: CredentialType.WEBHOOK_SECRET, label: "Webhook_Sec" },
+    { value: CredentialType.OPENAI, label: "OpenAI", logo: "/openai.svg" },
+    { value: CredentialType.GEMINI, label: "Gemini", logo: "/gemini.svg" },
+    { value: CredentialType.ANTHROPIC, label: "Anthropic", logo: "/anthropic.svg" },
+    { value: CredentialType.DEEPSEEK, label: "DeepSeek", logo: "/deepseek.svg" },
+    { value: CredentialType.RESEND, label: "Resend", logo: "/resend.svg" },
+    {
+        value: CredentialType.WEBHOOK_SECRET,
+        label: "Webhook Secret",
+        logo: "/webhook.svg" // You'll need to add this icon
+      }
 ]
+
+interface CredentialFormProps {
+    initialData?: {
+        id?: string;
+        name: string;
+        type: CredentialType;
+        value: string;
+    }
+}
 
 export const CredentialForm = ({ initialData }: { initialData?: any }) => {
     const router = useRouter();
@@ -94,7 +98,7 @@ export const CredentialForm = ({ initialData }: { initialData?: any }) => {
                 {/* Header: Industrial Telemetry */}
                 <header className="flex items-center gap-4 border-b border-zinc-900 pb-8">
                     <div className="size-12 bg-zinc-950 border border-zinc-800 flex items-center justify-center relative">
-                        <Terminal className="size-6 text-[#FF6B00]" />
+                        <TerminalIcon className="size-6 text-[#FF6B00]" />
                         <div className="absolute top-0 left-0 size-2 border-t border-l border-[#FF6B00]" />
                     </div>
                     <div>
@@ -175,7 +179,7 @@ export const CredentialForm = ({ initialData }: { initialData?: any }) => {
                                                             className="rounded-none bg-zinc-950 border-zinc-800 h-12 text-[11px] font-black uppercase tracking-widest focus-visible:ring-0 focus-visible:border-[#FF6B00] placeholder:text-zinc-800"
                                                             placeholder="PROD_API_KEY_01" 
                                                         />
-                                                        <Cpu className="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-zinc-800" />
+                                                        <CpuIcon className="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-zinc-800" />
                                                     </div>
                                                 </FormControl>
                                                 <FormMessage className="text-[8px] font-bold text-red-500 uppercase" />
@@ -207,7 +211,7 @@ export const CredentialForm = ({ initialData }: { initialData?: any }) => {
                                                                 className="h-8 w-8 hover:bg-zinc-900 rounded-none"
                                                                 onClick={() => setShowKey(!showKey)}
                                                             >
-                                                                {showKey ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
+                                                                {showKey ? <EyeOffIcon className="size-3" /> : <Eye className="size-3" />}
                                                             </Button>
                                                             <Button
                                                                 type="button"
@@ -281,4 +285,9 @@ export const CredentialForm = ({ initialData }: { initialData?: any }) => {
             </div>
         </div>
     )
+}
+
+export const CredentialView = ({ credentialId }: { credentialId: string }) => {
+    const { data: credential } = useSuspenseCredential(credentialId);
+    return <CredentialForm initialData={credential} />
 }
