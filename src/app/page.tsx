@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function ViveluneBrandedLanding() {
   const router = useRouter();
@@ -105,52 +106,87 @@ export default function ViveluneBrandedLanding() {
                   </p>
 
                   <div className="flex flex-wrap gap-4">
+                    <Link href="/signup">
                     <button className="relative group bg-white px-10 py-5 text-black text-[11px] font-black uppercase tracking-widest overflow-hidden transition-all">
                       <span className="relative z-10">Initialize_Titan</span>
                       <div className="absolute inset-0 bg-[#FF6B00] translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                     </button>
+                    </Link>
+                    <Link href="/docs">
                     <button className="border border-zinc-800 text-white px-10 py-5 text-[11px] font-black uppercase tracking-widest hover:bg-zinc-900 transition-all">
                       Specs_Manifesto
                     </button>
+                    </Link>
                   </div>
                </motion.div>
             </div>
 
             {/* BRAND TELEMETRY CARD */}
-            <div className="lg:w-96 bg-[#080808] p-10 flex flex-col justify-between border-l border-zinc-900">
-               <div className="space-y-12">
-                  <div className="group">
-                    <div className="flex justify-between items-center mb-4">
-                      <Fingerprint className="size-5 text-[#FF6B00]" />
-                      <span className="text-[8px] font-mono text-zinc-700">ID: VVLN-77</span>
-                    </div>
-                    <div className="h-[1px] w-full bg-zinc-900 group-hover:bg-[#FF6B00]/30 transition-colors" />
-                  </div>
+            <div className="lg:w-96 bg-[#080808] p-10 flex flex-col justify-between border-l border-zinc-900 relative overflow-hidden group">
+   
+   {/* Subtle background glow when "Ready" */}
+   <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
 
-                  <div className="space-y-2">
-                    <div className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Active_Latency</div>
-                    <div className="text-5xl font-black text-white italic">{latency}ms</div>
-                  </div>
+   <div className="space-y-12 relative z-10">
+      <div className="group">
+        <div className="flex justify-between items-center mb-4">
+          <Fingerprint className="size-5 text-[#FF6B00]" />
+          <span className="text-[8px] font-mono text-zinc-700 uppercase">Identity_Unverified</span>
+        </div>
+        <div className="h-[1px] w-full bg-zinc-900 group-hover:bg-[#FF6B00]/30 transition-colors" />
+      </div>
 
-                  <div className="space-y-2 pt-10 border-t border-zinc-900">
-                    <div className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Integrity_Check</div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 h-1 bg-zinc-900 relative overflow-hidden">
-                        <motion.div 
-                          animate={{ left: ['-100%', '100%'] }} 
-                          transition={{ repeat: Infinity, duration: 2 }}
-                          className="absolute inset-0 bg-[#FF6B00]/50 w-1/2" 
-                        />
-                      </div>
-                      <span className="text-[10px] font-mono text-emerald-500">99.9%</span>
-                    </div>
-                  </div>
-               </div>
-               
-               <div className="pt-10">
-                  <Eye className="size-6 text-zinc-800" />
-               </div>
-            </div>
+      <div className="space-y-2">
+        <div className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Signal_Strength</div>
+        <div className="text-5xl font-black text-white italic">{latency}ms</div>
+      </div>
+
+      {/* THE UPDATED INTEGRITY CHECK / LOGIN TRIGGER */}
+      <div className="space-y-4 pt-10 border-t border-zinc-900">
+        <div className="flex justify-between items-center">
+          <div className="text-[9px] font-black text-white uppercase tracking-widest">System_Integrity</div>
+          <motion.span 
+            animate={{ opacity: [1, 0.5, 1] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+            className="text-[10px] font-mono text-emerald-500 font-bold"
+          >
+            100%
+          </motion.span>
+        </div>
+        
+        <div className="h-1 bg-zinc-900 relative overflow-hidden">
+          <motion.div 
+            initial={{ width: "0%" }}
+            animate={{ width: "100%" }}
+            transition={{ duration: 2, ease: "easeOut" }}
+            className="absolute inset-0 bg-emerald-500 shadow-[0_0_10px_#10b981]" 
+          />
+        </div>
+
+        {/* THE PUSH TO LOGIN */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5 }}
+          className="pt-4"
+        >
+          <Button 
+            onClick={() => router.push('/sign-in')}
+            className="w-full bg-emerald-500 hover:bg-emerald-400 text-black rounded-none font-black text-[10px] tracking-[3px] uppercase h-12 shadow-[0_10px_20px_-10px_rgba(16,185,129,0.3)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            Authorize_Session
+          </Button>
+          <p className="text-[7px] font-mono text-zinc-600 text-center mt-3 uppercase tracking-tighter">
+            Click to bypass restricted guest view
+          </p>
+        </motion.div>
+      </div>
+   </div>
+   
+   <div className="pt-10 opacity-30 group-hover:opacity-100 transition-opacity">
+      <ShieldCheck className="size-6 text-emerald-500" />
+   </div>
+</div>
 
           </div>
         </div>
@@ -268,10 +304,12 @@ export default function ViveluneBrandedLanding() {
           </div>
         </div>
         
+        <Link href="/case-studies/roastandrecover">
         <button className="w-full mt-12 py-4 border border-zinc-800 hover:border-white text-white text-[10px] font-black uppercase tracking-[4px] transition-all flex items-center justify-center gap-3">
           <Scan className="size-3" />
           Full_Audit_Log
         </button>
+        </Link>
       </div>
 
     </div>

@@ -1,453 +1,305 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { 
-  ArrowRightIcon, 
-  QuoteIcon, 
-  CpuIcon, 
-  TrendingUpIcon, 
-  CheckCircle2,
-  UsersIcon,
-  ClockIcon,
-  DollarSignIcon,
-  BarChart3Icon,
-  ZapIcon,
-  ShieldIcon,
-  MessageSquareIcon,
-  DownloadIcon,
-  Share2Icon,
-  BookmarkIcon
+  TrendingUp, AlertCircle, ShieldAlert, 
+  Terminal, BarChart3, Database, 
+  ArrowLeft, Lock, Download, Zap,
+  ChevronRight, Activity, Clock, ShieldCheck
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
-gsap.registerPlugin(ScrollTrigger);
-
-export default function RoastAndRecoverCaseStudy() {
+export default function RoastAndRecoverFullCase() {
   const router = useRouter();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const statsRef = useRef<HTMLDivElement>(null);
-  const timelineRef = useRef<HTMLDivElement>(null);
+  const [showWarning, setShowWarning] = useState(false);
+const [timeLeft, setTimeLeft] = useState(10); // Countdown for the warning UI
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Animate header
-      gsap.from(".case-study-header", {
-        opacity: 0,
-        y: 50,
-        duration: 1,
-        ease: "power3.out"
-      });
+useEffect(() => {
+  // Trigger warning after 20 seconds of browsing
+  const timer = setTimeout(() => {
+    setShowWarning(true);
+  }, 10000);
 
-      // Animate stats
-      gsap.from(".stat-card", {
-        scrollTrigger: {
-          trigger: statsRef.current,
-          start: "top 80%",
-        },
-        opacity: 0,
-        y: 30,
-        stagger: 0.2,
-        duration: 0.8,
-        ease: "power3.out"
-      });
-
-      // Timeline animation
-      gsap.from(".timeline-item", {
-        scrollTrigger: {
-          trigger: timelineRef.current,
-          start: "top 80%",
-        },
-        opacity: 0,
-        x: -50,
-        stagger: 0.3,
-        duration: 0.8,
-        ease: "power3.out"
-      });
-
-      // Parallax effect
-      gsap.to(".parallax-bg", {
-        scrollTrigger: {
-          scrub: true
-        },
-        y: 100,
-        ease: "none"
-      });
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, []);
-
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success("Case study link copied to clipboard!");
-  };
-
-  const handleDownload = () => {
-    toast.success("PDF download started!");
-    // In a real app, you'd trigger a PDF download here
-  };
-
-  const handleBookmark = () => {
-    toast.success("Added to bookmarks!");
-  };
-
-  const handleDemoRequest = () => {
-    router.push('/contact?demo=true');
-  };
+  return () => clearTimeout(timer);
+}, []);
 
   return (
-    <main ref={containerRef} className="bg-white text-black min-h-screen">
-      {/* NAVBAR */}
-      <header className="fixed top-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-b border-gray-300">
-        <div className="max-w-7xl mx-auto h-16 px-6 flex items-center justify-between">
-          <Link href="/" className="text-xl font-semibold tracking-tight cursor-pointer">
-            Vivelune
-          </Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm text-gray-600">
-            <Link href="/docs" className="hover:text-gray-900 transition">Docs</Link>
-            <Link href="/contact" className="hover:text-gray-900 transition">Contact</Link>
-            <Link href="/login" className="hover:text-gray-900 transition">Login</Link>
-            <Link
-              href="/signup"
-              className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-md shadow-md shadow-gray-400/20 transition"
-            >
-              Start Free Trial
-            </Link>
-          </nav>
+    <main className="bg-[#050505] text-zinc-400 min-h-screen font-sans selection:bg-[#FF6B00]/30 selection:text-white overflow-x-hidden">
+      
+      {/* 01. NAVIGATION: SYSTEM_BACK_PATH */}
+      <nav className="fixed top-0 w-full z-[100] bg-black/80 backdrop-blur-xl border-b border-zinc-900 px-6">
+        <div className="max-w-screen-2xl mx-auto h-16 flex items-center justify-between">
+          <button 
+            onClick={() => router.push('/')}
+            className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[4px] text-zinc-500 hover:text-white transition-colors group"
+          >
+            <ArrowLeft className="size-4 group-hover:-translate-x-1 transition-transform" />
+            Return_to_Core
+          </button>
+          <div className="flex items-center gap-6">
+             <div className="hidden md:flex items-center gap-4 border-r border-zinc-800 pr-6">
+                <div className="size-2 bg-emerald-500 rounded-full animate-pulse" />
+                <span className="text-[9px] font-mono uppercase tracking-widest text-emerald-500/80">Archive_Unlocked</span>
+             </div>
+             <Button onClick={() => router.push('/sign-in')} className="h-8 bg-white text-black text-[9px] font-black uppercase tracking-widest rounded-none px-6 hover:bg-[#FF6B00] transition-all">
+                Sync_Session
+             </Button>
+          </div>
         </div>
-      </header>
+      </nav>
 
-      {/* HERO SECTION */}
-      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-        <div className="parallax-bg absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-purple-500/5" />
+      {/* 02. HERO: MISSION_PROFILE */}
+      <section className="pt-32 pb-20 px-6 border-b border-zinc-900 relative overflow-hidden">
+        {/* Ambient Grid Background */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808005_1px,transparent_1px),linear-gradient(to_bottom,#80808005_1px,transparent_1px)] bg-[size:40px_40px]" />
         
-        <div className="max-w-4xl mx-auto relative">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-8 case-study-header">
-            <Link href="/" className="hover:text-gray-900">Home</Link>
-            <span>/</span>
-            <Link href="/case-studies" className="hover:text-gray-900">Case Studies</Link>
-            <span>/</span>
-            <span className="text-gray-900">Roast & Recover</span>
-          </div>
-
-          {/* Header */}
-          <div className="mb-12 case-study-header">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="size-16 bg-orange-500 rounded-2xl flex items-center justify-center">
-                <span className="text-2xl font-black text-white">R&R</span>
+        <div className="max-w-screen-2xl mx-auto relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-end gap-12">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }} 
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-6"
+            >
+              <div className="flex items-center gap-3">
+                <div className="size-2 bg-[#FF6B00]" />
+                <span className="text-[10px] font-black text-[#FF6B00] uppercase tracking-[5px]">Dossier_R&R_099</span>
               </div>
-              <div>
-                <h1 className="text-4xl md:text-6xl font-black tracking-tight">
-                  Roast & Recover
-                </h1>
-                <p className="text-xl text-gray-600 mt-2">
-                  How we automated customer recovery and saved $2.4M annually
-                </p>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
+              <h1 className="text-[12vw] md:text-[140px] font-black leading-[0.75] tracking-[-0.08em] text-white uppercase italic">
+                ROAST <br /> <span className="text-zinc-800">RECOVER.</span>
+              </h1>
+            </motion.div>
             
-          </div>
-
-          {/* Hero Image */}
-          <div className="relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden shadow-2xl mb-20 case-study-header">
-            <Image
-              src="/roast.jpg"
-              alt="Roast & Recover Dashboard"
-              fill
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-            <div className="absolute bottom-8 left-8 text-white">
-              <p className="text-sm opacity-80 mb-2">FEATURED INTEGRATION</p>
-              <p className="text-2xl font-bold">AI-Powered Customer Recovery Platform</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* STATS SECTION */}
-      <section ref={statsRef} className="py-20 px-6 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-black text-center mb-16">
-            The <span className="text-orange-500">Impact</span>
-          </h2>
-
-          <div className="grid md:grid-cols-4 gap-8">
-            {[
-              { 
-                icon: DollarSignIcon, 
-                value: "$2.4M", 
-                label: "Annual Revenue Saved",
-                change: "+18%"
-              },
-              { 
-                icon: ClockIcon, 
-                value: "40.2h", 
-                label: "Weekly Operations Saved",
-                change: "-65%"
-              },
-              { 
-                icon: UsersIcon, 
-                value: "15K+", 
-                label: "Customers Retained",
-                change: "+92%"
-              },
-              { 
-                icon: TrendingUpIcon, 
-                value: "94%", 
-                label: "Recovery Rate",
-                change: "+47%"
-              }
-            ].map((stat, i) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div
-                  key={i}
-                  whileHover={{ scale: 1.05 }}
-                  className="stat-card bg-white p-8 rounded-2xl shadow-lg border border-gray-100 text-center"
-                >
-                  <div className="size-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Icon className="size-8 text-orange-500" />
-                  </div>
-                  <div className="text-4xl font-black mb-2">{stat.value}</div>
-                  <div className="text-sm text-gray-600 mb-2">{stat.label}</div>
-                  <div className="text-sm font-bold text-green-600">{stat.change}</div>
-                </motion.div>
-              );
-            })}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-zinc-900/50 p-8 border border-zinc-800 backdrop-blur-md min-w-[320px] shadow-2xl"
+            >
+              <div className="space-y-4 text-[10px] font-mono uppercase">
+                <div className="flex justify-between border-b border-zinc-800 pb-2 italic">
+                  <span className="text-zinc-600">Classification:</span>
+                  <span className="text-white">Financial_Recovery</span>
+                </div>
+                <div className="flex justify-between border-b border-zinc-800 pb-2 italic">
+                  <span className="text-zinc-600">Entity:</span>
+                  <span className="text-white">RoastAndRecover_Inc</span>
+                </div>
+                <div className="flex justify-between text-emerald-500 font-bold italic">
+                  <span>Net_Impact:</span>
+                  <span className="tracking-tighter">+$124,000_Q4</span>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* CHALLENGE SECTION */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-black mb-8">
-            The <span className="text-orange-500">Challenge</span>
-          </h2>
+      {/* 03. FORENSIC ANALYSIS GRID */}
+      <section className="max-w-screen-2xl mx-auto px-6 py-24">
+        <div className="grid lg:grid-cols-12 gap-px bg-zinc-800 border border-zinc-800 shadow-2xl">
           
-          <div className="prose prose-lg max-w-none">
-            <p className="text-xl text-gray-700 leading-relaxed mb-6">
-              Roast & Recover, a premium coffee subscription service, was facing a critical issue: 
-              negative customer feedback was falling through the cracks, leading to churn and lost revenue.
+          {/* Phase 01: The Breach */}
+          <div className="lg:col-span-4 bg-[#080808] p-12 group">
+            <ShieldAlert className="size-8 text-red-500 mb-10 group-hover:scale-110 transition-transform" />
+            <h3 className="text-white font-black uppercase tracking-[4px] text-lg mb-6 italic">01. The_Leak</h3>
+            <p className="text-xs font-mono leading-relaxed text-zinc-500 uppercase mb-8">
+              R&R was hemorrhaging revenue due to a <span className="text-white">static retry system</span>. 
+              $40k/month in churn was occurring silently without triggered alerts.
             </p>
-            
-            <div className="grid md:grid-cols-2 gap-8 my-12">
-              <div className="bg-red-50 p-8 rounded-3xl border border-red-100">
-                <h3 className="text-xl font-black mb-4 text-red-600">Before Vivelune</h3>
-                <ul className="space-y-3">
-                  {[
-                    "Manual review of 500+ tickets/day",
-                    "48hr average response time",
-                    "15% customer churn rate",
-                    "Missed high-value customer alerts"
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <span className="text-red-500 font-black">✕</span>
-                      <span className="text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div className="bg-red-500/5 border-l-2 border-red-500 p-4 text-[10px] font-mono italic">
+              "System failed to differentiate between soft and hard declines."
+            </div>
+          </div>
 
-              <div className="bg-green-50 p-8 rounded-3xl border border-green-100">
-                <h3 className="text-xl font-black mb-4 text-green-600">After Vivelune</h3>
-                <ul className="space-y-3">
-                  {[
-                    "Automated real-time processing",
-                    "<5min average response time",
-                    "3% customer churn rate",
-                    "Instant VIP customer alerts"
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <CheckCircle2 className="size-5 text-green-500 flex-shrink-0" />
-                      <span className="text-gray-700">{item}</span>
-                    </li>
+          {/* Phase 02: Intervention */}
+          <div className="lg:col-span-4 bg-black p-12 relative overflow-hidden">
+             <div className="size-8 bg-[#FF6B00]/20 border border-[#FF6B00]/40 flex items-center justify-center mb-10">
+                <Terminal className="size-4 text-[#FF6B00]" />
+             </div>
+             <h3 className="text-white font-black uppercase tracking-[4px] text-lg mb-6 italic">02. The_Sync</h3>
+             <ul className="space-y-4 text-[10px] font-mono uppercase mb-10">
+                <li className="flex items-center gap-3"><ChevronRight className="size-3 text-[#FF6B00]" /> LTV-Weighted Dunning</li>
+                <li className="flex items-center gap-3"><ChevronRight className="size-3 text-[#FF6B00]" /> Neural Routing Logic</li>
+                <li className="flex items-center gap-3"><ChevronRight className="size-3 text-[#FF6B00]" /> Automated Dispute Bypass</li>
+             </ul>
+             <div className="h-24 bg-zinc-950 border border-zinc-900 p-4">
+                <div className="flex gap-1 items-end h-full">
+                  {[40, 70, 45, 90, 65, 80, 30, 50, 20].map((h, i) => (
+                    <motion.div 
+                      key={i}
+                      animate={{ height: [`${h}%`, `${h+10}%`, `${h}%`] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
+                      className="flex-1 bg-[#FF6B00]/20 border-t border-[#FF6B00]" 
+                    />
                   ))}
-                </ul>
-              </div>
+                </div>
+             </div>
+          </div>
+
+          {/* Phase 03: Results */}
+          <div className="lg:col-span-4 bg-[#080808] p-12">
+            <BarChart3 className="size-8 text-emerald-500 mb-10" />
+            <div className="space-y-10">
+               <div>
+                  <div className="text-7xl font-black text-white italic tracking-tighter">94.2%</div>
+                  <div className="text-[9px] font-black text-zinc-700 uppercase tracking-[4px] mt-2">Recovery_Efficiency</div>
+               </div>
+               <div>
+                  <div className="text-7xl font-black text-white italic tracking-tighter">12ms</div>
+                  <div className="text-[9px] font-black text-zinc-700 uppercase tracking-[4px] mt-2">Signal_Latency</div>
+               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* SOLUTION SECTION */}
-      <section className="py-20 px-6 bg-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-black mb-12 text-center">
-            The <span className="text-orange-500">Solution</span>
-          </h2>
-
-          <div className="space-y-12">
-            {[
-              {
-                step: 1,
-                title: "Intelligent Routing",
-                desc: "Vivelune analyzes incoming feedback, prioritizes by sentiment and customer value, and routes to appropriate queues.",
-                icon: CpuIcon
-              },
-              {
-                step: 2,
-                title: "Automated Recovery",
-                desc: "For high-value customers, the system automatically generates personalized recovery offers and escalation paths.",
-                icon: ZapIcon
-              },
-              {
-                step: 3,
-                title: "Real-time Analytics",
-                desc: "Dashboards provide instant visibility into recovery rates, response times, and revenue impact.",
-                icon: BarChart3Icon
-              }
-            ].map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: i % 2 === 0 ? -50 : 50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6 }}
-                  className="flex items-start gap-8"
-                >
-                  <div className="flex-shrink-0 size-16 bg-orange-500 rounded-2xl flex items-center justify-center text-white text-2xl font-black">
-                    {item.step}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-4 mb-4">
-                      <Icon className="size-8 text-orange-500" />
-                      <h3 className="text-2xl font-black">{item.title}</h3>
-                    </div>
-                    <p className="text-lg text-gray-700 leading-relaxed">{item.desc}</p>
-                  </div>
-                </motion.div>
-              );
-            })}
+      {/* 04. DEPLOYMENT TIMELINE: 168H_PROTOCOL */}
+      <section className="py-24 px-6 border-t border-zinc-900 bg-[#030303]">
+        <div className="max-w-screen-2xl mx-auto">
+          <div className="flex items-center gap-6 mb-20">
+            <h2 className="text-4xl md:text-5xl font-black text-white italic uppercase tracking-tighter shrink-0">
+              INTEGRATION_LOG <span className="text-[#FF6B00]">168H</span>
+            </h2>
+            <div className="h-px w-full bg-zinc-900" />
           </div>
-        </div>
-      </section>
 
-      {/* TESTIMONIAL */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-black text-white p-16 rounded-[60px] relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-purple-500/10" />
-            
-            <QuoteIcon className="size-16 text-orange-500 mb-8 relative z-10" />
-            
-            <blockquote className="text-3xl md:text-4xl font-light leading-relaxed mb-8 relative z-10">
-              "Vivelune isn't just a tool—it's a digital employee that never sleeps. 
-              We've transformed our customer recovery process from reactive to proactive, 
-              and the results speak for themselves."
-            </blockquote>
-            
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="size-16 bg-orange-500 rounded-full flex items-center justify-center text-2xl font-black">
-                AR
-              </div>
-              <div>
-                <div className="font-black text-lg">Alex Rivera</div>
-                <div className="text-gray-400">CEO, Roast & Recover</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* TECHNICAL ARCHITECTURE */}
-      <section ref={timelineRef} className="py-20 px-6 bg-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-black mb-12 text-center">
-            Technical <span className="text-orange-500">Architecture</span>
-          </h2>
-
-          <div className="space-y-8">
+          <div className="grid md:grid-cols-4 gap-12">
             {[
-              {
-                title: "Webhook Integration",
-                desc: "Google Forms → Vivelune webhook trigger captures customer feedback in real-time"
-              },
-              {
-                title: "AI Analysis",
-                desc: "Sentiment analysis and priority scoring using GPT-4 and custom classifiers"
-              },
-              {
-                title: "CRM Enrichment",
-                desc: "Fetch customer lifetime value and history from Stripe via API"
-              },
-              {
-                title: "Decision Engine",
-                desc: "Route to appropriate workflow based on priority and customer value"
-              },
-              {
-                title: "Action Execution",
-                desc: "Generate offers, send emails, create support tickets, notify Slack"
-              },
-              {
-                title: "Analytics Pipeline",
-                desc: "Track all events, measure success rates, update dashboards"
-              }
-            ].map((item, i) => (
-              <div key={i} className="timeline-item flex gap-6">
-                <div className="flex-shrink-0 w-12 text-center">
-                  <div className="size-8 bg-orange-500 rounded-full mx-auto mb-2" />
-                  {i < 5 && <div className="w-0.5 h-16 bg-orange-200 mx-auto" />}
+              { hour: "T-00h", label: "Logic_Ingestion", status: "COMPLETE" },
+              { hour: "T-24h", label: "Pattern_Analysis", status: "COMPLETE" },
+              { hour: "T-72h", label: "Intervention_v1", status: "STABLE" },
+              { hour: "T-168h", label: "Autonomous_State", status: "LIVE" }
+            ].map((step, i) => (
+              <motion.div 
+                key={i} 
+                whileHover={{ x: 5 }}
+                className="border-l border-zinc-800 pl-6 py-2 group"
+              >
+                <div className="text-[#FF6B00] text-[10px] font-mono mb-2">{step.hour}</div>
+                <h4 className="text-white font-black uppercase text-xs tracking-widest mb-4 group-hover:text-[#FF6B00] transition-colors">
+                  {step.label}
+                </h4>
+                <div className={`text-[8px] font-black px-2 py-1 inline-block ${
+                  step.status === 'LIVE' ? 'bg-emerald-500 text-black' : 'bg-zinc-900 text-zinc-600'
+                }`}>
+                  {step.status}
                 </div>
-                <div className="flex-1 pb-8">
-                  <h3 className="text-xl font-black mb-2">{item.title}</h3>
-                  <p className="text-gray-700">{item.desc}</p>
-                </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-black mb-6">
-            Ready to transform your <br />
-            <span className="text-orange-500">customer recovery?</span>
+      {/* 05. CALL TO ACTION: FINAL_AUTHORIZATION */}
+      <section className="py-40 px-6 bg-black relative">
+        <div className="max-w-3xl mx-auto text-center relative z-10">
+          <div className="flex justify-center mb-10">
+            <div className="size-20 bg-emerald-500/5 border border-emerald-500/20 rounded-full flex items-center justify-center">
+               <ShieldCheck className="size-10 text-emerald-500 animate-pulse" />
+            </div>
+          </div>
+          <h2 className="text-5xl md:text-7xl font-black text-white italic uppercase tracking-tighter mb-8">
+            DEPLOY_TITAN <br /> <span className="text-[#FF6B00]">TO_YOUR_CORE.</span>
           </h2>
-          <p className="text-xl text-gray-600 mb-10">
-            Join Roast & Recover and hundreds of other companies using Vivelune to automate customer success.
+          <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-[4px] mb-12 max-w-lg mx-auto leading-relaxed">
+            Authorization levels are open for public sync. <br /> 
+            Join the autonomous financial layer today.
           </p>
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
-            
-            <Button
-              onClick={() => router.push('/signup')}
-              variant="outline"
-              className="border-gray-300 hover:bg-gray-50 rounded-full px-10 py-6 text-lg font-black"
+          
+          <div className="flex flex-col md:flex-row gap-6 justify-center">
+            <Button 
+              onClick={() => router.push('/sign-up')}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-none font-black text-[11px] tracking-[5px] px-12 py-8 transition-all shadow-[0_20px_40px_-10px_rgba(16,185,129,0.3)]"
             >
-              Start Free Trial
-              <ArrowRightIcon className="ml-2 size-5" />
+              INITIALIZE_SYNC
+            </Button>
+            <Button 
+              onClick={() => router.push('/docs')}
+              className="bg-transparent border border-zinc-800 text-zinc-500 hover:text-white rounded-none font-black text-[11px] tracking-[5px] px-12 py-8 transition-all"
+            >
+              VIEW_SPECS
             </Button>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-gray-300 px-6 py-10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-6 text-sm text-gray-500">
-          <span>© {new Date().getFullYear()} Vivelune</span>
-          <div className="flex gap-6 flex-wrap">
-            <Link href="/privacy" className="hover:text-gray-900 transition">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-gray-900 transition">Terms of Service</Link>
-            <Link href="/agreement" className="hover:text-gray-900 transition">User Agreement</Link>
-            <Link href="/docs" className="hover:text-gray-900 transition">Docs</Link>
-            <Link href="/contact" className="hover:text-gray-900 transition">Contact</Link>
-          </div>
+      <footer className="py-20 px-6 border-t border-zinc-900 bg-[#030303]">
+        <div className="max-w-screen-2xl mx-auto flex flex-col md:flex-row justify-between items-start opacity-40">
+           <div className="space-y-4">
+              <span className="text-sm font-black uppercase tracking-[8px] text-white italic">Vivelune</span>
+              <p className="text-[9px] font-mono text-zinc-700 uppercase leading-loose">
+                Universal Rights Reserved // Vivelune_Logic_Corp <br />
+                Security_Audit: Stable_2026
+              </p>
+           </div>
+           <div className="flex gap-12 mt-12 md:mt-0 text-[9px] font-black uppercase tracking-widest">
+              <span className="cursor-pointer hover:text-[#FF6B00]">Terminal</span>
+              <span className="cursor-pointer hover:text-[#FF6B00]">Network</span>
+              <span className="cursor-pointer hover:text-[#FF6B00]">Auth_Logs</span>
+           </div>
         </div>
       </footer>
+      <AnimatePresence>
+  {showWarning && (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-xl flex items-center justify-center p-6"
+    >
+      <motion.div 
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        className="max-w-md w-full bg-[#080808] border border-red-500/30 p-10 shadow-[0_0_100px_rgba(239,68,68,0.1)] relative overflow-hidden"
+      >
+        {/* Warning Scanner Line */}
+        <motion.div 
+          animate={{ top: ['0%', '100%'] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          className="absolute left-0 right-0 h-[1px] bg-red-500/20"
+        />
+
+        <div className="relative z-10 text-center">
+          <div className="flex justify-center mb-6">
+            <div className="size-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center">
+              <Lock className="size-8 text-red-500 animate-pulse" />
+            </div>
+          </div>
+
+          <h3 className="text-white font-black uppercase tracking-[4px] text-xl mb-2 italic">
+            Session_Expired
+          </h3>
+          <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-8 leading-relaxed">
+            Your temporary <span className="text-red-500">Guest_Decryption_Token</span> has reached its lifecycle limit. 
+            Full archive access requires a secure handshake.
+          </p>
+
+          <div className="space-y-4">
+            <Button 
+              onClick={() => router.push('/sign-in')}
+              className="w-full bg-red-600 hover:bg-red-500 text-white rounded-none font-black text-[11px] tracking-[4px] py-7 transition-all"
+            >
+              AUTHORIZE_SESSION_SYNC
+            </Button>
+            
+            <button 
+              onClick={() => window.location.reload()}
+              className="text-[9px] font-mono text-zinc-700 hover:text-white uppercase tracking-[2px] transition-colors"
+            >
+              Request_Token_Extension
+            </button>
+          </div>
+        </div>
+
+        {/* Decorative ID Corner */}
+        <div className="absolute bottom-2 right-2 text-[8px] font-mono text-zinc-800 uppercase">
+          Ref_Error: 403_Auth_Required
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
     </main>
   );
 }
