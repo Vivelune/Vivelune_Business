@@ -10,7 +10,7 @@ const isPublicRoute = createRouteMatcher([
   '/contact',
   '/privacy',
   '/terms',
-  "/welcome",
+  "/labs",
   "/case-studies/roastandrecover",  
   "/docs",
 ]);
