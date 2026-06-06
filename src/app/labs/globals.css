@@ -1,0 +1,76 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: #080808;
+    color: #f5f0e8;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Selection color */
+  ::selection {
+    background: rgba(201, 169, 110, 0.2);
+    color: #e8c98a;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #080808;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(201, 169, 110, 0.25);
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(201, 169, 110, 0.5);
+  }
+}
+
+@layer utilities {
+  /* Gold text utility */
+  .text-gold {
+    color: #c9a96e;
+  }
+  .text-gold-light {
+    color: #e8c98a;
+  }
+
+  /* Font family utilities */
+  .font-display {
+    font-family: var(--font-display), Georgia, serif;
+  }
+  .font-body {
+    font-family: var(--font-body), sans-serif;
+  }
+
+  /* Subtle grid background */
+  .bg-grid {
+    background-image: linear-gradient(
+        rgba(255, 255, 255, 0.025) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.025) 1px,
+        transparent 1px
+      );
+    background-size: 72px 72px;
+  }
+}
