@@ -39,7 +39,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     {/* Subtle Radial Gradient for Depth */}
                     <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none" />
                     {children}
-                    <WelcomeModal />
                     <Toaster 
                       position="bottom-right"
                       toastOptions={{
