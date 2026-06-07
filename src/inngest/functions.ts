@@ -143,7 +143,7 @@ export const executeWorkflow = inngest.createFunction(
         data: {
           workflowId,
           inngestEventId,
-          status: ExecutionStatus.RUNNING
+          status: ExecutionStatus.RUNNING,
         }
       });
     });
