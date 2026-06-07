@@ -110,7 +110,7 @@ export const executeWorkflow = inngest.createFunction(
       clerkChannel(),
     ]
   },
-  async ({ event, step, publish }) => {
+  async ({ event, step}) => {
     const inngestEventId = event.id;
     const workflowId = event.data.workflowId;
 
@@ -143,7 +143,7 @@ export const executeWorkflow = inngest.createFunction(
         data: {
           workflowId,
           inngestEventId,
-          status: ExecutionStatus.RUNNING
+          status: ExecutionStatus.RUNNING,
         }
       });
     });
@@ -229,7 +229,11 @@ export const executeWorkflow = inngest.createFunction(
           context,
           userId,
           step,
-          publish,
+          publish: async (payload: any) => {
+            // Generate a deterministic step ID based on the node execution loop
+            const stepId = `publish-${currentNode.id}-${executed.size}`;
+            return step.sendEvent(stepId, payload);
+          },
         });
 
         context = newContext;
