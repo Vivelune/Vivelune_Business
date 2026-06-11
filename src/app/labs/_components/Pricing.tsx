@@ -39,8 +39,8 @@ const PLANS = [
   {
     sessions: "3",
     label: "Intensive",
-    priceUSD: 158,
-    cadApprox: "≈ CA$220",
+    priceUSD: 187,
+    cadApprox: "≈ CA$260",
     period: "per month",
     subtitle: "3 sessions per week · 55 min each · 12 sessions/month",
     features: [
