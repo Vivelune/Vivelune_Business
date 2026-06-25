@@ -13,6 +13,11 @@ const isPublicRoute = createRouteMatcher([
   "/labs",
   "/case-studies/roastandrecover",  
   "/docs",
+ 
+  '/get-labs',
+  '/get-labs/download-get-labs',
+  '/get-labs/(.*)',
+
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
