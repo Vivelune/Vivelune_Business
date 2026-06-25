@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 
 export default function GEDDownloadPage() {
-  // Client-side download handler
+  // Client-side download handle
   const handleDownload = () => {
     const link = document.createElement("a");
     link.href = "/ged_social_studies_practice_blueprint.pdf";
