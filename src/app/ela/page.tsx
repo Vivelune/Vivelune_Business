@@ -70,7 +70,7 @@ export default function Grade6Registration() {
 
       if (dbError) throw new Error(dbError.message);
 
-      router.push("/ela-quiz");
+      router.push("/ela/ela-quiz");
     } catch (err: any) {
       setError(err.message || "Failed to create account.");
     } finally {
