@@ -1,18 +1,25 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, DM_Sans } from "next/font/google";
-import "./globals.css"
-const cormorant = Cormorant_Garamond({
+import { Teko, Rajdhani, JetBrains_Mono } from "next/font/google";
+import "./globals.css";
+
+const teko = Teko({
   subsets: ["latin"],
-  weight: ["300", "400", "600"],
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-display",
   display: "swap",
 });
 
-const dmSans = DM_Sans({
+const rajdhani = Rajdhani({
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-body",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-data",
   display: "swap",
 });
 
@@ -20,7 +27,14 @@ export const metadata: Metadata = {
   title: "ViveLune Labs — Premium 1-to-1 Education",
   description:
     "Private, expert-led instruction in AI, App Development, E-Commerce, Languages and more. 1-to-1 sessions starting from $80 USD/month.",
-  keywords: ["online tutoring", "1 to 1 classes", "AI courses", "language learning", "app development", "vivelune"],
+  keywords: [
+    "online tutoring",
+    "1 to 1 classes",
+    "AI courses",
+    "language learning",
+    "app development",
+    "vivelune",
+  ],
 };
 
 export default function RootLayout({
@@ -29,8 +43,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${cormorant.variable} ${dmSans.variable}`}>
-      <body className="bg-black antialiased">{children}</body>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${teko.variable} ${rajdhani.variable} ${jetbrainsMono.variable}`}
+    >
+      <body className="bg-void antialiased">{children}</body>
     </html>
   );
 }

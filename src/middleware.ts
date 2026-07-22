@@ -13,7 +13,10 @@ const isPublicRoute = createRouteMatcher([
   "/labs",
   "/case-studies/roastandrecover",  
   "/docs",
- 
+  '/ela(.*)',
+  '/ela/(.*)',
+  'ela/ela-quiz(.*)',
+  'ela/ela-quiz/(.*)',
   '/get-labs',
   '/get-labs/download-get-labs',
   '/get-labs/(.*)',

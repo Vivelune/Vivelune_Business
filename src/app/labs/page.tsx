@@ -8,8 +8,8 @@ import Subjects from "./_components/Subjects";
 
 export default function LandingPage() {
   return (
-    <main className="bg-black text-white min-h-screen">
-      <Navbar/>
+    <main className="bg-void text-white min-h-screen">
+      <Navbar />
       <Hero />
       <StatsBar />
       <Subjects />
